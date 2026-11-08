@@ -55,7 +55,7 @@ Toucher un jour du calendrier, ou le bouton **« + Noter aujourd'hui »**, puis 
 |---|---|
 | 🌸 **Début de cycle** | Le 1er jour des règles. « Règles » est alors coché automatiquement. |
 | 🩸 **Règles** | Chaque jour de règles |
-| ♥ **Rapport** | Les jours de rapport |
+| ♥ **Rapport** | Les jours de rapport, en précisant **Non protégé** (choix par défaut) ou **Protégé** |
 | 💧 **Glaire cervicale** | Sèche, collante, crémeuse, aqueuse ou blanc d'œuf |
 
 Chaque saisie est enregistrée immédiatement. Aucun mot de passe n'est demandé pour noter.
@@ -70,7 +70,8 @@ Chaque saisie est enregistrée immédiatement. Aucun mot de passe n'est demandé
 | <img src="docs/legende-fertile-prevue.png" width="44"> | **Fenêtre fertile prévue** : case vert clair hachurée. |
 | <img src="docs/legende-ovulation.png" width="44"> | **Ovulation** d'un cycle terminé : rond vert foncé cerclé, avec l'icône d'ovule. |
 | <img src="docs/legende-ovulation-prevue.png" width="44"> | **Ovulation prévue** : rond vert clair à contour pointillé, avec l'icône d'ovule. |
-| <img src="docs/legende-rapport.png" width="44"> | **Rapport** noté ce jour-là : petit cœur sous la date. |
+| <img src="docs/legende-rapport.png" width="44"> | **Rapport non protégé** noté ce jour-là : cœur plein sous la date. |
+| <img src="docs/legende-rapport-protege.png" width="44"> | **Rapport protégé** noté ce jour-là : cœur vide (contour) sous la date. |
 | <img src="docs/legende-glaire.png" width="44"> | **Glaire cervicale** notée ce jour-là : goutte sous la date. |
 
 Le jour actuel est entouré d'un cercle. En résumé : **hachuré ou en pointillé = prévision**, **couleur pleine = cycle terminé ou saisie**.
@@ -116,7 +117,7 @@ Le bouton **📈** en haut de l'écran affiche :
 - le cycle moyen, le plus court, le plus long et la régularité ;
 - la durée moyenne des règles et le jour moyen d'ovulation ;
 - des **courbes** : durée des cycles et jour d'ovulation, cycle après cycle ;
-- des **graphiques** : durée des règles et, si des rapports ont été notés, rapports par cycle ;
+- des **graphiques** : durée des règles et, si des rapports ont été notés, rapports par cycle, avec le nombre de rapports non protégés et ceux ayant eu lieu pendant la fenêtre fertile estimée ;
 - **« Mes cycles »** : une vue d'ensemble, un rang par cycle, pour les comparer d'un coup d'œil ;
 - un **tableau** récapitulatif (« Voir en tableau »).
 
@@ -153,9 +154,12 @@ Pour le récupérer : Réglages ⚙️ → **Importer**, puis choisir le fichier
 
 Une fois configurée, la sauvegarde se fait **automatiquement** sur Google Drive à chaque modification, sans aucune action.
 
+> 📁 **Où vont les données ?** Dans un **fichier chiffré** (`menstry-backup.json`) enregistré sur le **Google Drive du compte Google utilisé pour se connecter** dans Menstry. Chaque personne a donc son propre fichier, dans son propre Drive : deux personnes avec deux comptes Google ne partagent rien et ne peuvent pas écraser la sauvegarde de l'autre. Les données ne transitent par aucun autre compte ni serveur, pas même par celui du propriétaire du projet Google Cloud.
+
 - La sauvegarde est placée dans un **dossier caché réservé à l'application**. Elle n'apparaît pas dans Drive, et l'application n'a accès à **aucun autre fichier** du Drive.
 - L'icône ☁️ en haut de l'écran indique l'état : **✓** sauvegardé, **↑** en attente (la toucher lance la sauvegarde), **!** problème.
 - Une fenêtre Google peut parfois s'ouvrir et se refermer brièvement : c'est normal.
+- Environ une fois par semaine, Google demande de renouveler l'autorisation : toucher l'icône ☁️ et accepter.
 
 La configuration prend environ 10 minutes et ne se fait qu'une fois. Voir [Configuration de Google Drive](#configuration-de-google-drive) en bas de page.
 
@@ -204,12 +208,43 @@ Réglages ⚙️ → **Effacer toutes les données**. Les sauvegardes, fichier o
 
 ## Configuration de Google Drive
 
-À faire une seule fois, de préférence sur un ordinateur, depuis la [console Google Cloud](https://console.cloud.google.com) :
+À faire une seule fois, depuis la [console Google Cloud](https://console.cloud.google.com). Sur téléphone, dans Chrome, activer d'abord **⋮ → « Version pour ordinateur »** : la console est plus facile à utiliser ainsi.
 
-1. Créer un **nouveau projet**, par exemple « Menstry ».
-2. Menu **API et services** → **Bibliothèque** → rechercher **Google Drive API** → **Activer**.
-3. **Écran de consentement OAuth** → type **Externe** → indiquer un nom et une adresse e-mail. À l'étape **Utilisateurs test**, ajouter **l'adresse Gmail utilisée**.
-4. **Identifiants** → **Créer des identifiants** → **ID client OAuth** → type **Application Web**.
-   Dans **Origines JavaScript autorisées**, ajouter : `https://carellyme.github.io`
-5. Copier l'**ID client**, qui se termine par `.apps.googleusercontent.com`.
-6. Dans l'application : Réglages ⚙️ → **Google Drive** → coller l'ID client → **Connecter Drive**.
+**1. Créer le projet**
+1. Créer un **nouveau projet**, par exemple « Menstry », et le sélectionner en haut de la page.
+2. Menu ☰ → **API et services** → **Bibliothèque** → rechercher **Google Drive API** → **Activer**.
+
+**2. Configurer l'écran de consentement**
+1. Menu ☰ → **Google Auth Platform** (ou **API et services** → **Écran de consentement OAuth**) → **Commencer**.
+2. Indiquer un nom d'application (par exemple « Menstry ») et une adresse e-mail, choisir le type **Externe**, puis terminer.
+
+Le message « Vous n'avez pas encore configuré de client OAuth » s'affiche ensuite : c'est normal, c'est l'étape suivante.
+
+**3. Créer le client OAuth**
+1. Bouton **Créer un client OAuth** (ou menu de gauche **Clients** → **+ Créer un client**).
+2. Type d'application : **Application Web**, nom au choix.
+3. **Origines JavaScript autorisées** → **+ Ajouter un URI** → saisir exactement `https://carellyme.github.io` (sans `/Menstry` ni `/` final).
+4. Laisser « URI de redirection autorisés » vide → **Créer**.
+5. Copier l'**ID client**, qui se termine par `.apps.googleusercontent.com`. Il reste consultable dans le menu **Clients**.
+
+**4. Ajouter l'utilisateur test**
+1. Menu de gauche → **Audience**.
+2. Section **Utilisateurs test** → **+ Add users** (« Ajouter des utilisateurs »).
+3. Saisir l'adresse Gmail dont le Drive recevra les sauvegardes → **Enregistrer**.
+
+L'application reste en mode « Test » : c'est suffisant pour un usage personnel, jusqu'à 100 adresses.
+
+**Partager l'application avec d'autres personnes** : ajouter leur adresse Gmail comme utilisateur test, puis leur transmettre l'ID client (il n'est pas secret). Chacune se connecte avec **son propre compte Google** et choisit **son propre mot de passe** : ses données sont enregistrées dans **son** Drive, chiffrées avec **son** mot de passe.
+
+**5. Connecter Menstry**
+1. Dans Menstry : Réglages ⚙️ → configurer le **mot de passe de sauvegarde** si ce n'est pas déjà fait.
+2. **Google Drive** → coller l'ID client → **Connecter Drive**.
+3. Choisir le compte Google **inscrit comme utilisateur test** : c'est sur le Drive de ce compte que seront enregistrées les sauvegardes. L'écran **« Google n'a pas validé cette application »** apparaît : c'est normal pour une application personnelle. Toucher **Continuer**.
+4. Accepter l'accès à Drive (cocher la case de permission si elle est proposée) → **Continuer**.
+
+Le message « Drive connecté ✓ » s'affiche et l'icône ☁️ affiche **✓**.
+
+**À savoir**
+- En mode « Test », Google demande de **renouveler l'autorisation environ tous les 7 jours**. L'icône ☁️ passe alors à **↑** ou **!** : la toucher et accepter l'écran Google suffit.
+- **Où sont les données ?** Sur le **Google Drive du compte Google choisi à l'étape de connexion**, dans un dossier caché propre à Menstry, sous la forme d'un seul fichier chiffré, `menstry-backup.json`. Il n'apparaît ni dans l'application Drive ni dans la recherche. Pour vérifier qu'il existe : sur drive.google.com (version ordinateur) → ⚙️ → **Paramètres** → **Gérer les applications** → **Menstry** (« Données d'application cachées »). Le menu **Options** de cette ligne permet aussi de supprimer ces données.
+- La date de la dernière sauvegarde est indiquée dans Réglages ⚙️ → Google Drive.

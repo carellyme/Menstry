@@ -98,6 +98,9 @@ dialog.center{margin:auto;border-radius:20px;width:calc(100% - 32px);max-width:4
 .chips{display:flex;flex-wrap:wrap;gap:6px}
 .chip{border:1.5px solid var(--line);background:#fff;border-radius:999px;padding:8px 12px;font-size:14px}
 .chip.on{background:#e6f1fb;border-color:var(--mucus);color:#1d5a8f;font-weight:600}
+.chips.prot{margin:-2px 0 10px 40px}
+.chips.prot[hidden]{display:none}
+.pchip.on{background:#fbe4ee;border-color:#c2185b;color:#9c1450}
 
 .set h4{margin:22px 0 8px;font-size:13px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
 .set .item{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}
@@ -105,9 +108,11 @@ dialog.center{margin:auto;border-radius:20px;width:calc(100% - 32px);max-width:4
 .set .item small{display:block;color:var(--muted);font-size:12px}
 .set input[type=number]{width:70px;padding:8px;border:1.5px solid var(--line);border-radius:10px;font:inherit;text-align:center}
 .set input[type=text]{width:100%;padding:10px;border:1.5px solid var(--line);border-radius:10px;font:inherit;font-size:13px}
-.btn{border:1.5px solid var(--line);background:#fff;border-radius:12px;padding:10px 14px;font-size:14px;font-weight:600;white-space:nowrap}
+.btn{border:1.5px solid #f0d3db;background:#f9e6eb;color:var(--accent);border-radius:12px;padding:10px 14px;font-size:14px;font-weight:600;white-space:nowrap}
+.btn:active{filter:brightness(.95)}
 .btn.primary,.primary{background:var(--accent);border-color:var(--accent);color:#fff}
-.btn.danger{color:#c0392b}
+.btn.danger{background:#fdeaea;border-color:#f6cccc;color:#c0392b}
+.set input[type=number],.set input[type=text]{background:#fff;box-shadow:inset 0 1px 2px rgba(60,30,40,.06)}
 .btn:disabled{opacity:.45}
 .btnrow{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
 .switch{position:relative;width:50px;height:30px;flex:none}
@@ -141,6 +146,7 @@ dialog.center{margin:auto;border-radius:20px;width:calc(100% - 32px);max-width:4
 .ov-cells i.o{background:var(--ovu)}
 .ov-cells i.fut{background:transparent;outline:1px dashed var(--line);outline-offset:-1px}
 .ov-cells i.s::after{content:"";position:absolute;left:50%;top:50%;width:6px;height:6px;margin:-3px;border-radius:50%;background:#c2185b;box-shadow:0 0 0 1.5px #fff}
+.ov-cells i.sp::after{background:#fff;box-shadow:inset 0 0 0 1.5px #c2185b}
 .ov-cells i.m{box-shadow:inset 0 -3px 0 var(--mucus)}
 .ov-legend{display:flex;flex-wrap:wrap;gap:6px 12px;font-size:11px;color:var(--muted);margin-top:10px}
 .ov-legend span{display:flex;align-items:center;gap:5px}
@@ -213,7 +219,8 @@ details.tbl th{font-size:11px;color:var(--muted);font-weight:600}
     <span><i class="sw" style="background:var(--period-soft);outline:2px dashed var(--period);outline-offset:-3px"></i>Règles prévues</span>
     <span><i class="sw" style="background:none"><svg class="ovum" viewBox="0 0 24 24"><use href="#ovum"/></svg></i>Ovulation estimée</span>
     <span><i class="sw" style="background:var(--fert)"></i>Fenêtre fertile</span>
-    <span><i class="sw" style="background:#f4eeeb"><b class="heart">♥</b></i>Rapport</span>
+    <span><i class="sw" style="background:#f4eeeb"><b class="heart">♥</b></i>Rapport non protégé</span>
+    <span><i class="sw" style="background:#f4eeeb"><b class="heart">♡</b></i>Rapport protégé</span>
     <span><i class="sw" style="background:#f4eeeb">💧</i>Glaire cervicale</span>
   </section>
   <p class="disclaimer">Hachuré / pointillé = prédiction. Ovulation = début du cycle suivant − 14 j. Estimation indicative, pas une méthode de contraception.</p>
@@ -229,6 +236,10 @@ details.tbl th{font-size:11px;color:var(--muted);font-weight:600}
     <button class="toggle" data-k="start" style="--c:var(--accent)"><span class="ic">🌸</span><span class="t">Début de cycle<small>1er jour des règles</small></span><span class="ck"></span></button>
     <button class="toggle" data-k="period" style="--c:var(--period)"><span class="ic">🩸</span><span class="t">Règles</span><span class="ck"></span></button>
     <button class="toggle" data-k="sex" style="--c:#c2185b"><span class="ic">♥</span><span class="t">Rapport</span><span class="ck"></span></button>
+    <div class="chips prot" id="protChips" hidden>
+      <button class="chip pchip" data-p="0">♥ Non protégé</button>
+      <button class="chip pchip" data-p="1">♡ Protégé</button>
+    </div>
     <div class="lbl">💧 Glaire cervicale</div>
     <div class="chips" id="mucusChips"></div>
   </div>
@@ -429,7 +440,7 @@ function renderCal(){
     if (rec.start) c.push('start');
     if (n === t) c.push('today');
     let b = '';
-    if (rec.sex) b += '<b class="heart">♥</b>';
+    if (rec.sex) b += rec.prot ? '<b class="heart">♡</b>' : '<b class="heart">♥</b>';
     if (rec.mucus) b += `<span class="drop${MUCUS_HI.has(rec.mucus) ? ' hi' : ''}">💧</span>`;
     const btn = document.createElement('button');
     btn.className = c.join(' ');
@@ -486,6 +497,8 @@ function renderSheet(){
   if (INFO.last && n >= INFO.last) info = `Jour ${n - INFO.last + 1} du cycle` + (info ? ' · ' + info : '');
   $('#sheetInfo').textContent = info || ' ';
   document.querySelectorAll('#daySheet .toggle').forEach(b => { const on = !!rec[b.dataset.k]; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); });
+  $('#protChips').hidden = !rec.sex;
+  document.querySelectorAll('#protChips .pchip').forEach(c => { const on = !!rec.sex && (+c.dataset.p === (rec.prot ? 1 : 0)); c.classList.toggle('on', on); c.setAttribute('aria-pressed', on); });
   $('#mucusChips').innerHTML = MUCUS.map(([v, l]) => `<button class="chip${rec.mucus === v ? ' on' : ''}" data-v="${v}" aria-pressed="${rec.mucus === v}">${l}</button>`).join('');
 }
 function updateDay(fn){
@@ -496,19 +509,22 @@ function updateDay(fn){
   saveData(); renderAll(); renderSheet(); syncSoon(true);
 }
 $('#daySheet').addEventListener('click', e => {
-  const t = e.target.closest('.toggle'), c = e.target.closest('.chip');
+  const t = e.target.closest('.toggle'), pc = e.target.closest('.pchip'), c = !pc && e.target.closest('.chip');
   if (t){
     const k = t.dataset.k, wasStart = !!data.days[sheetDay]?.start;
     updateDay(r => {
       r[k] = !r[k];
       if (k === 'start' && r.start) r.period = true;
       if (k === 'period' && !r.period) r.start = false;
+      if (k === 'sex' && !r.sex) r.prot = false;
     });
     if (k === 'start' && !wasStart && data.days[sheetDay]?.start){
       const res = checkCycle(toNum(sheetDay));
       if (res?.issues.length){ $('#daySheet').close(); showIrregular(res, true); }
       else if (res) toast(`Cycle précédent : ${res.L} jours · régulier ✓`, 3500);
     }
+  } else if (pc){
+    updateDay(r => { r.prot = pc.dataset.p === '1'; });
   } else if (c){
     updateDay(r => { r.mucus = r.mucus === c.dataset.v ? '' : c.dataset.v; });
   } else if (e.target === e.currentTarget) e.currentTarget.close();
@@ -851,9 +867,9 @@ function cycleStats(){
     const s = st[i], e = st[i+1], len = e - s;
     if (len < 15 || len > 60) continue;
     let p = 0; while (p < 15 && data.days[toStr(s+p)]?.period) p++;
-    const ovu = e - L; let sex = 0, sexF = 0;
-    for (let d = s; d < e; d++){ if (data.days[toStr(d)]?.sex){ sex++; if (d >= ovu-5 && d <= ovu+2) sexF++; } }
-    out.push({ start:s, end:e, len, p, ovuDay: ovu - s + 1, sex, sexF });
+    const ovu = e - L; let sex = 0, sexF = 0, unp = 0, unpF = 0;
+    for (let d = s; d < e; d++){ const r = data.days[toStr(d)]; if (r?.sex){ const f = d >= ovu-5 && d <= ovu+2; sex++; if (f) sexF++; if (!r.prot){ unp++; if (f) unpF++; } } }
+    out.push({ start:s, end:e, len, p, ovuDay: ovu - s + 1, sex, sexF, unp, unpF });
   }
   return out;
 }
@@ -921,7 +937,7 @@ function overview(cyc){
       const n = r.s + d, rec = data.days[toStr(n)] || {}, c = [];
       if (rec.period) c.push('p'); else if (n === ovu) c.push('o'); else if (n >= ovu-5 && n <= ovu+2) c.push('f');
       if (r.cur && n > t) c.push('fut');
-      if (rec.sex) c.push('s'); if (rec.mucus) c.push('m');
+      if (rec.sex) c.push(rec.prot ? 's sp' : 's'); if (rec.mucus) c.push('m');
       cells += `<i class="${c.join(' ')}" title="${fmt(n)}"></i>`;
     }
     return `<div class="ov-row"><div class="ov-lab"><b>${fmt(r.s)}</b><br>${r.cur ? 'en cours' : r.len + ' j'}</div><div class="ov-cells" style="grid-template-columns:repeat(${max},1fr)">${cells}</div></div>`;
@@ -938,7 +954,7 @@ function renderStats(){
   const sd = Math.sqrt(mean(lens.map(l => (l-avg)**2)));
   const reg = cyc.length < 3 ? '—' : sd <= 2 ? 'Très régulier' : sd <= 4 ? 'Régulier' : 'Irrégulier';
   const ps = cyc.filter(c => c.p).map(c => c.p);
-  const sexT = cyc.reduce((a, c) => a + c.sex, 0), sexF = cyc.reduce((a, c) => a + c.sexF, 0);
+  const sexT = cyc.reduce((a, c) => a + c.sex, 0), sexF = cyc.reduce((a, c) => a + c.sexF, 0), unpF = cyc.reduce((a, c) => a + c.unpF, 0);
   body.innerHTML = `
     <div class="tiles">
       <div class="tile"><div class="s">Cycle moyen</div><div class="v">${n1(avg)} j</div></div>
@@ -954,18 +970,18 @@ function renderStats(){
       ${chart(cyc.map(c => ({ x: dm(c.start), y: c.ovuDay, tip: `Cycle du ${fmt(c.start)} : ovulation <b>J${c.ovuDay}</b> (${fmt(c.end - (+data.settings.luteal||14))})` })), { color: '#2e9e66' })}</section>
     ${ps.length ? `<section class="card"><p class="ch-title">Durée des règles</p><p class="ch-sub">En jours</p>
       ${chart(cyc.map(c => ({ x: dm(c.start), y: c.p, tip: `Cycle du ${fmt(c.start)} : <b>${c.p} j</b> de règles` })), { type: 'bar', color: '#d94862', zero: true })}</section>` : ''}
-    ${sexT ? `<section class="card"><p class="ch-title">Rapports par cycle</p><p class="ch-sub">${sexF} sur ${sexT} pendant la fenêtre fertile estimée</p>
-      ${chart(cyc.map(c => ({ x: dm(c.start), y: c.sex, tip: `Cycle du ${fmt(c.start)} : <b>${c.sex}</b> rapport${c.sex > 1 ? 's' : ''}, dont ${c.sexF} en fenêtre fertile` })), { type: 'bar', color: '#c2185b', zero: true })}</section>` : ''}
+    ${sexT ? `<section class="card"><p class="ch-title">Rapports par cycle</p><p class="ch-sub">${sexF} sur ${sexT} pendant la fenêtre fertile estimée, dont ${unpF} non protégé${unpF > 1 ? 's' : ''}</p>
+      ${chart(cyc.map(c => ({ x: dm(c.start), y: c.sex, tip: `Cycle du ${fmt(c.start)} : <b>${c.sex}</b> rapport${c.sex > 1 ? 's' : ''} (${c.unp} non protégé${c.unp > 1 ? 's' : ''}), dont ${c.sexF} en fenêtre fertile` })), { type: 'bar', color: '#c2185b', zero: true })}</section>` : ''}
     <section class="card"><p class="ch-title">Mes cycles</p><p class="ch-sub">Un rang par cycle, un carré par jour (le plus récent en haut)</p>
       ${overview(all)}
       <div class="ov-legend">
         <span><i style="background:var(--period)"></i>Règles</span><span><i style="background:var(--fert)"></i>Fenêtre fertile</span>
-        <span><i style="background:var(--ovu)"></i>Ovulation</span><span><i style="background:#f1ebe8"><b style="position:absolute;left:3px;top:3px;width:6px;height:6px;border-radius:50%;background:#c2185b"></b></i>Rapport</span>
+        <span><i style="background:var(--ovu)"></i>Ovulation</span><span><i style="background:#f1ebe8"><b style="position:absolute;left:3px;top:3px;width:6px;height:6px;border-radius:50%;background:#c2185b"></b></i>Non protégé</span><span><i style="background:#f1ebe8"><b style="position:absolute;left:3px;top:3px;width:6px;height:6px;border-radius:50%;background:#fff;box-shadow:inset 0 0 0 1.5px #c2185b"></b></i>Protégé</span>
         <span><i style="background:#f1ebe8;box-shadow:inset 0 -3px 0 var(--mucus)"></i>Glaire</span>
       </div></section>
     <details class="tbl"><summary>Voir en tableau</summary>
       <table><tr><th>Début</th><th>Durée</th><th>Règles</th><th>Ovulation</th><th>Rapports</th></tr>
-      ${cyc.slice().reverse().map(c => `<tr><td>${fmt(c.start, {day:'numeric', month:'short', year:'2-digit'})}</td><td>${c.len} j</td><td>${c.p || '—'} j</td><td>J${c.ovuDay}</td><td>${c.sex}</td></tr>`).join('')}
+      ${cyc.slice().reverse().map(c => `<tr><td>${fmt(c.start, {day:'numeric', month:'short', year:'2-digit'})}</td><td>${c.len} j</td><td>${c.p || '—'} j</td><td>J${c.ovuDay}</td><td>${c.sex}${c.sex ? ` <small style="color:var(--muted)">(${c.unp} non prot.)</small>` : ''}</td></tr>`).join('')}
       </table></details>`;
   wireCharts(body);
 }
