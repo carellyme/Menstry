@@ -334,8 +334,18 @@ const todayNum = () => { const d = new Date(); return Math.round(Date.UTC(d.getF
 const fmt = (n, o={day:'numeric', month:'short'}) => new Date(n*DAY).toLocaleDateString('fr-FR', {...o, timeZone:'UTC'});
 const mean = a => a.reduce((x,y)=>x+y,0)/a.length;
 
-const MUCUS = [['seche','Sèche'],['collante','Collante'],['cremeuse','Crémeuse'],['aqueuse','Aqueuse'],['blanc',"Blanc d'œuf"]];
-const MUCUS_HI = new Set(['aqueuse','blanc']);
+const MUCUS = [['collante','Collante'],['liquide','Liquide']];
+const MUCUS_HI = new Set(['liquide']);
+// Conversion des anciens types de glaire vers les 2 choix actuels ('' = sèche : aucune glaire notée)
+const MUCUS_OLD = { seche:'', cremeuse:'collante', aqueuse:'liquide', blanc:'liquide', glissante:'liquide' };
+function migrate(d){
+  for (const [k, r] of Object.entries(d.days || {})){
+    if (!r || !(r.mucus in MUCUS_OLD)) continue;
+    if (MUCUS_OLD[r.mucus]) r.mucus = MUCUS_OLD[r.mucus]; else delete r.mucus;
+    if (!Object.keys(r).length) delete d.days[k];
+  }
+  return d;
+}
 const DEFAULT_DATA = { v:1, days:{}, settings:{ cycleLen:28, periodLen:5, luteal:14, tolerance:4 }, updated:0 };
 const OVUM = '<svg class="ovum" viewBox="0 0 24 24" aria-hidden="true"><use href="#ovum"/></svg>';
 
@@ -343,6 +353,7 @@ const OVUM = '<svg class="ovum" viewBox="0 0 24 24" aria-hidden="true"><use href
 function loadJSON(k, def){ try { const v = JSON.parse(localStorage.getItem(k)); return v ? {...structuredClone(def), ...v} : structuredClone(def); } catch { return structuredClone(def); } }
 let data = loadJSON('mc.data', DEFAULT_DATA);
 data.settings = {...DEFAULT_DATA.settings, ...data.settings};
+if (Object.values(data.days).some(r => r && r.mucus in MUCUS_OLD)){ migrate(data); localStorage.setItem('mc.data', JSON.stringify(data)); }
 let prefs = loadJSON('mc.prefs', {});
 function saveData(){ data.updated = Date.now(); localStorage.setItem('mc.data', JSON.stringify(data)); }
 function savePrefs(){ localStorage.setItem('mc.prefs', JSON.stringify(prefs)); }
@@ -617,7 +628,7 @@ async function applyImported(res){
   const o = res.obj;
   if (!o || typeof o.days !== 'object') throw new Error('Contenu invalide');
   if (Object.keys(data.days).length && !confirm('Remplacer les données actuelles de ce téléphone par la sauvegarde ?')) return false;
-  data = { ...structuredClone(DEFAULT_DATA), ...o, settings: { ...DEFAULT_DATA.settings, ...o.settings } };
+  data = { ...structuredClone(DEFAULT_DATA), ...o, settings: { ...DEFAULT_DATA.settings, ...o.settings } }; migrate(data);
   saveData();
   if (res.key && !prefs.hasKey) await storeKey(res.key, res.salt);
   renderAll(); renderSettings();

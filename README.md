@@ -56,7 +56,7 @@ Toucher un jour du calendrier, ou le bouton **« + Noter aujourd'hui »**, puis 
 | 🌸 **Début de cycle** | Le 1er jour des règles. « Règles » est alors coché automatiquement. |
 | 🩸 **Règles** | Chaque jour de règles |
 | ♥ **Rapport** | Les jours de rapport, en précisant **Non protégé** (choix par défaut) ou **Protégé** |
-| 💧 **Glaire cervicale** | Sèche, collante, crémeuse, aqueuse ou blanc d'œuf |
+| 💧 **Glaire cervicale** | **Collante** ou **Liquide** |
 
 Chaque saisie est enregistrée immédiatement. Aucun mot de passe n'est demandé pour noter.
 
