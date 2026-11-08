@@ -71,7 +71,7 @@ Chaque saisie est enregistrée immédiatement. Aucun mot de passe n'est demandé
 | <img src="docs/legende-ovulation.png" width="44"> | **Ovulation** d'un cycle terminé : rond vert foncé cerclé, avec l'icône d'ovule. |
 | <img src="docs/legende-ovulation-prevue.png" width="44"> | **Ovulation prévue** : rond vert clair à contour pointillé, avec l'icône d'ovule. |
 | <img src="docs/legende-rapport.png" width="44"> | **Rapport non protégé** noté ce jour-là : cœur plein sous la date. |
-| <img src="docs/legende-rapport-protege.png" width="44"> | **Rapport protégé** noté ce jour-là : cœur vide (contour) sous la date. |
+| <img src="docs/legende-rapport-protege.png" width="44"> | **Rapport protégé** noté ce jour-là : cœur vide (contour) suivi d'un petit « p », sous la date. |
 | <img src="docs/legende-glaire.png" width="44"> | **Glaire cervicale** notée ce jour-là : goutte sous la date. |
 
 Le jour actuel est entouré d'un cercle. En résumé : **hachuré ou en pointillé = prévision**, **couleur pleine = cycle terminé ou saisie**.

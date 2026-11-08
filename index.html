@@ -100,6 +100,8 @@ dialog.center{margin:auto;border-radius:20px;width:calc(100% - 32px);max-width:4
 .chip.on{background:#e6f1fb;border-color:var(--mucus);color:#1d5a8f;font-weight:600}
 .chips.prot{margin:-2px 0 10px 40px}
 .chips.prot[hidden]{display:none}
+.pp{font-size:.62em;font-weight:700;margin-left:-.08em;vertical-align:-.05em;font-family:system-ui,-apple-system,sans-serif}
+.pchip .ph{color:#c2185b}
 .pchip.on{background:#fbe4ee;border-color:#c2185b;color:#9c1450}
 
 .set h4{margin:22px 0 8px;font-size:13px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
@@ -220,7 +222,7 @@ details.tbl th{font-size:11px;color:var(--muted);font-weight:600}
     <span><i class="sw" style="background:none"><svg class="ovum" viewBox="0 0 24 24"><use href="#ovum"/></svg></i>Ovulation estimée</span>
     <span><i class="sw" style="background:var(--fert)"></i>Fenêtre fertile</span>
     <span><i class="sw" style="background:#f4eeeb"><b class="heart">♥</b></i>Rapport non protégé</span>
-    <span><i class="sw" style="background:#f4eeeb"><b class="heart">♡</b></i>Rapport protégé</span>
+    <span><i class="sw" style="background:#f4eeeb"><b class="heart">♡<small class="pp">p</small></b></i>Rapport protégé</span>
     <span><i class="sw" style="background:#f4eeeb">💧</i>Glaire cervicale</span>
   </section>
   <p class="disclaimer">Hachuré / pointillé = prédiction. Ovulation = début du cycle suivant − 14 j. Estimation indicative, pas une méthode de contraception.</p>
@@ -237,8 +239,8 @@ details.tbl th{font-size:11px;color:var(--muted);font-weight:600}
     <button class="toggle" data-k="period" style="--c:var(--period)"><span class="ic">🩸</span><span class="t">Règles</span><span class="ck"></span></button>
     <button class="toggle" data-k="sex" style="--c:#c2185b"><span class="ic">♥</span><span class="t">Rapport</span><span class="ck"></span></button>
     <div class="chips prot" id="protChips" hidden>
-      <button class="chip pchip" data-p="0">♥ Non protégé</button>
-      <button class="chip pchip" data-p="1">♡ Protégé</button>
+      <button class="chip pchip" data-p="0"><span class="ph">♥</span> Non protégé</button>
+      <button class="chip pchip" data-p="1"><span class="ph">♡<small class="pp">p</small></span> Protégé</button>
     </div>
     <div class="lbl">💧 Glaire cervicale</div>
     <div class="chips" id="mucusChips"></div>
@@ -440,7 +442,7 @@ function renderCal(){
     if (rec.start) c.push('start');
     if (n === t) c.push('today');
     let b = '';
-    if (rec.sex) b += rec.prot ? '<b class="heart">♡</b>' : '<b class="heart">♥</b>';
+    if (rec.sex) b += rec.prot ? '<b class="heart">♡<small class="pp">p</small></b>' : '<b class="heart">♥</b>';
     if (rec.mucus) b += `<span class="drop${MUCUS_HI.has(rec.mucus) ? ' hi' : ''}">💧</span>`;
     const btn = document.createElement('button');
     btn.className = c.join(' ');
