@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#faf6f3">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Menstry">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://accounts.google.com; style-src 'self' 'unsafe-inline' https://accounts.google.com; connect-src 'self' https://www.googleapis.com https://accounts.google.com; frame-src https://accounts.google.com; img-src 'self' data: blob:">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>Menstry</title>
+<style>
+:root{
+  --bg:#faf6f3; --card:#fff; --ink:#2b2326; --muted:#8a7f83; --line:#ece3df;
+  --period:#d94862; --period-soft:#fde8ec; --fert:#d3efdf; --fert-ink:#1d7449; --ovu:#2e9e66;
+  --mucus:#3b82c4; --accent:#b8405e; --r:16px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus:not(:focus-visible){outline:none}
+body.locked #app{display:none}
+#app{max-width:480px;margin:0 auto;padding:calc(env(safe-area-inset-top) + 14px) 14px calc(env(safe-area-inset-bottom) + 96px)}
+header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;gap:8px}
+h1{font-size:22px;margin:0;letter-spacing:-.01em}
+.hbtns{display:flex;gap:8px}
+.icon-btn{border:0;background:var(--card);min-width:42px;height:42px;padding:0 10px;border-radius:12px;font-size:18px;box-shadow:0 1px 3px rgba(60,30,40,.08)}
+.icon-btn[hidden]{display:none}
+#cloudBtn{font-size:14px}
+#cloudBtn.err{color:#c0392b}
+.card{background:var(--card);border-radius:var(--r);padding:14px;box-shadow:0 1px 3px rgba(60,30,40,.06);margin-bottom:12px}
+.big{font-size:28px;font-weight:700;letter-spacing:-.02em}
+.phase{color:var(--muted);margin-top:2px}
+.phase.f{color:var(--fert-ink);font-weight:600}
+.phase.p{color:var(--period);font-weight:600}
+.rows{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+.k{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.v{font-weight:600}
+.cal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.cal-head h2{font-size:17px;margin:0;text-transform:capitalize}
+.nav{border:0;background:#f4eeeb;width:36px;height:36px;border-radius:10px;font-size:18px}
+.grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.dow{font-size:11px;color:var(--muted);text-align:center;padding:4px 0}
+.day{position:relative;aspect-ratio:1;border:0;border-radius:12px;background:transparent;font-size:15px;display:flex;align-items:center;justify-content:center;padding:0}
+.day .n{display:flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%}
+.day.out{opacity:.35}
+.day.fertile{background:var(--fert)}
+.day.fertile.pred{background:repeating-linear-gradient(135deg,var(--fert) 0 5px,#eef9f3 5px 10px)}
+.day.ovu{background:var(--ovu);color:#fff;font-weight:700;border-radius:50%;box-shadow:0 0 0 2px #fff,0 0 0 4px var(--ovu);z-index:1}
+.day.ovu.pred{background:var(--fert);color:var(--fert-ink);box-shadow:none;border:2px dashed var(--ovu)}
+.ovum{width:16px;height:16px;flex:none;display:inline-block;vertical-align:middle;background:var(--ovu);border-radius:50%;padding:1px;color:#fff;box-shadow:0 0 0 1.5px #fff}
+.day .ovum{position:absolute;top:-3px;right:-3px;width:17px;height:17px}
+.reg{margin-top:12px;padding:9px 11px;border-radius:12px;font-size:14px;display:flex;gap:8px;align-items:center;width:100%;border:0;text-align:left}
+.reg.ok{background:#eaf6ef;color:var(--fert-ink)}
+.reg.warn{background:#fff3e0;color:#9a5a00;font-weight:600}
+#alertDlg ul{padding-left:18px;margin:8px 0}
+#alertDlg li{margin:6px 0}
+.day.pperiod{background:var(--period-soft);outline:2px dashed var(--period);outline-offset:-3px}
+.day.period{background:var(--period);color:#fff;font-weight:600}
+.day.today .n{box-shadow:0 0 0 2px currentColor}
+.day.start::before{content:"";position:absolute;top:4px;left:4px;width:7px;height:7px;border-radius:50%;background:#fff;box-shadow:0 0 0 1.5px var(--period)}
+.badges{position:absolute;bottom:2px;left:0;right:0;display:flex;justify-content:center;gap:2px;font-size:10px;line-height:1;pointer-events:none}
+.heart{color:#c2185b}
+.day.period .heart,.day.ovu:not(.pred) .heart{color:#fff}
+.drop{font-size:9px}
+.drop.hi{filter:saturate(1.6)}
+.legend{display:grid;grid-template-columns:1fr 1fr;gap:8px 12px;font-size:13px;color:var(--muted)}
+.legend span{display:flex;align-items:center;gap:8px}
+.sw{width:18px;height:18px;border-radius:6px;flex:none;display:inline-flex;align-items:center;justify-content:center;font-size:10px}
+.fab{white-space:nowrap;position:fixed;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom) + 18px);border:0;background:var(--accent);color:#fff;font-weight:600;padding:14px 22px;border-radius:999px;box-shadow:0 6px 18px rgba(184,64,94,.35)}
+body.locked .fab{display:none}
+.disclaimer{font-size:12px;color:var(--muted);text-align:center;margin:8px 6px}
+
+dialog{border:0;padding:0;background:var(--card);color:var(--ink);width:100%;max-width:480px}
+dialog::backdrop{background:rgba(30,15,20,.4)}
+dialog.sheet{margin:auto auto 0;border-radius:22px 22px 0 0;max-height:92vh}
+dialog.full{margin:0 auto;height:100%;max-height:100%;border-radius:0}
+dialog.center{margin:auto;border-radius:20px;width:calc(100% - 32px);max-width:400px}
+.pad{padding:18px 16px calc(env(safe-area-inset-bottom) + 18px)}
+.sheet-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+.sheet-head h3{margin:0;font-size:19px;text-transform:capitalize}
+.close{border:0;background:#f4eeeb;width:34px;height:34px;border-radius:50%;font-size:16px}
+.muted{color:var(--muted);font-size:14px;margin:4px 0 12px}
+.toggle{display:flex;align-items:center;gap:12px;width:100%;padding:13px 14px;border:1.5px solid var(--line);border-radius:14px;background:#fff;margin-bottom:8px;text-align:left}
+.toggle .ic{font-size:20px;width:26px;text-align:center}
+.toggle .t{flex:1}
+.toggle[data-k=sex] .ic{color:#c2185b}
+.toggle .t small{display:block;color:var(--muted);font-size:12px}
+.toggle .ck{width:24px;height:24px;border-radius:50%;border:2px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:13px;color:#fff}
+.toggle.on{border-color:var(--c)}
+.toggle.on .ck{background:var(--c);border-color:var(--c)}
+.toggle.on .ck::after{content:"✓"}
+.lbl{font-size:13px;font-weight:600;margin:14px 0 8px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1.5px solid var(--line);background:#fff;border-radius:999px;padding:8px 12px;font-size:14px}
+.chip.on{background:#e6f1fb;border-color:var(--mucus);color:#1d5a8f;font-weight:600}
+
+.set h4{margin:22px 0 8px;font-size:13px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+.set .item{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}
+.set .item:last-child{border-bottom:0}
+.set .item small{display:block;color:var(--muted);font-size:12px}
+.set input[type=number]{width:70px;padding:8px;border:1.5px solid var(--line);border-radius:10px;font:inherit;text-align:center}
+.set input[type=text]{width:100%;padding:10px;border:1.5px solid var(--line);border-radius:10px;font:inherit;font-size:13px}
+.btn{border:1.5px solid var(--line);background:#fff;border-radius:12px;padding:10px 14px;font-size:14px;font-weight:600;white-space:nowrap}
+.btn.primary,.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.danger{color:#c0392b}
+.btn:disabled{opacity:.45}
+.btnrow{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.switch{position:relative;width:50px;height:30px;flex:none}
+.switch input{opacity:0;width:0;height:0}
+.switch span{position:absolute;inset:0;background:#ddd2ce;border-radius:999px;transition:.2s}
+.switch span::before{content:"";position:absolute;width:24px;height:24px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s;box-shadow:0 1px 2px rgba(0,0,0,.2)}
+.switch input:checked+span{background:var(--ovu)}
+.switch input:checked+span::before{transform:translateX(20px)}
+.note{font-size:12px;color:var(--muted);margin-top:6px}
+
+.stats .card{box-shadow:none;border:1px solid var(--line);padding:12px}
+.tiles{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:12px 0}
+.tile{background:#f8f2ef;border-radius:12px;padding:10px}
+.tile .v{font-size:19px;font-weight:700;letter-spacing:-.01em}
+.tile .s{font-size:11px;color:var(--muted)}
+.ch-title{font-weight:600;font-size:15px;margin:0}
+.ch-sub{font-size:12px;color:var(--muted);margin:2px 0 6px}
+.chart{position:relative;touch-action:pan-y}
+.chart svg{display:block;width:100%;height:auto;overflow:visible}
+.chart text{font:10px system-ui,-apple-system,sans-serif;fill:var(--muted)}
+.chart text.lab{fill:var(--ink);font-weight:600;font-size:11px}
+.ctip{position:absolute;top:0;transform:translateX(-50%);background:#2b2326;color:#fff;font-size:12px;padding:6px 9px;border-radius:8px;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .12s}
+.ctip.show{opacity:1}
+.ov-row{display:flex;align-items:center;gap:8px;margin:5px 0}
+.ov-lab{width:76px;flex:none;font-size:11px;color:var(--muted);line-height:1.2}
+.ov-lab b{color:var(--ink);font-weight:600}
+.ov-cells{flex:1;display:grid;gap:1px}
+.ov-cells i{height:16px;border-radius:2px;background:#f1ebe8;position:relative}
+.ov-cells i.p{background:var(--period)}
+.ov-cells i.f{background:var(--fert)}
+.ov-cells i.o{background:var(--ovu)}
+.ov-cells i.fut{background:transparent;outline:1px dashed var(--line);outline-offset:-1px}
+.ov-cells i.s::after{content:"";position:absolute;left:50%;top:50%;width:6px;height:6px;margin:-3px;border-radius:50%;background:#c2185b;box-shadow:0 0 0 1.5px #fff}
+.ov-cells i.m{box-shadow:inset 0 -3px 0 var(--mucus)}
+.ov-legend{display:flex;flex-wrap:wrap;gap:6px 12px;font-size:11px;color:var(--muted);margin-top:10px}
+.ov-legend span{display:flex;align-items:center;gap:5px}
+.ov-legend i{width:12px;height:12px;border-radius:2px;display:inline-block;position:relative}
+details.tbl{margin-top:4px}
+details.tbl summary{font-size:14px;color:var(--accent);cursor:pointer;padding:6px 0}
+details.tbl table{width:100%;border-collapse:collapse;font-size:13px}
+details.tbl th,details.tbl td{padding:6px 4px;text-align:right;border-bottom:1px solid var(--line)}
+details.tbl th:first-child,details.tbl td:first-child{text-align:left}
+details.tbl th{font-size:11px;color:var(--muted);font-weight:600}
+.empty{text-align:center;color:var(--muted);padding:40px 10px}
+
+#passDlg form{padding:20px}
+#passDlg h3{margin:0 0 6px}
+#passDlg input{width:100%;padding:12px;border:1.5px solid var(--line);border-radius:12px;font:inherit;margin-top:8px}
+.err{color:#c0392b;font-size:13px;min-height:18px;margin:8px 0 0}
+.row{display:flex;justify-content:flex-end;gap:8px;margin-top:12px}
+.row button{border:0;padding:10px 16px;border-radius:12px;font-weight:600;background:#f4eeeb}
+.row button.primary{background:var(--accent);color:#fff}
+
+#lock{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:50}
+#lock[hidden]{display:none}
+.lock-inner{text-align:center;padding:24px}
+.lock-inner .logo{font-size:52px}
+.lock-inner h2{margin:8px 0 22px}
+.lock-inner .primary{border:0;padding:14px 26px;border-radius:999px;font-weight:600;font-size:17px}
+.link{display:block;margin:16px auto 0;border:0;background:none;color:var(--accent);text-decoration:underline;font-size:14px}
+.link[hidden]{display:none}
+
+#toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 100px);transform:translateX(-50%) translateY(20px);background:#2b2326;color:#fff;padding:10px 16px;border-radius:12px;font-size:14px;opacity:0;transition:.25s;pointer-events:none;z-index:100;max-width:90vw;text-align:center}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body class="locked">
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><symbol id="ovum" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.6" fill="none" stroke="currentColor" stroke-width="2" stroke-dasharray="2.4 2.1"/><circle cx="12" cy="12" r="5.6" fill="currentColor"/><circle cx="12" cy="12" r="2.1" fill="#2e9e66"/></symbol></svg>
+
+<div id="lock" hidden>
+  <div class="lock-inner">
+    <div class="logo">🌙</div>
+    <h2>Menstry</h2>
+    <button id="unlockBtn" class="primary">🔓 Déverrouiller</button>
+    <button id="unlockPass" class="link" hidden>Utiliser le mot de passe</button>
+    <p id="lockErr" class="err"></p>
+  </div>
+</div>
+
+<div id="app">
+  <header>
+    <h1>Menstry</h1>
+    <div class="hbtns">
+      <button id="cloudBtn" class="icon-btn" hidden title="Synchronisation Drive">☁️</button>
+      <button id="statsBtn" class="icon-btn" aria-label="Statistiques">📈</button>
+      <button id="setBtn" class="icon-btn" aria-label="Réglages">⚙️</button>
+    </div>
+  </header>
+
+  <section class="card" id="summary"></section>
+
+  <section class="card">
+    <div class="cal-head">
+      <button class="nav" id="prevM" aria-label="Mois précédent">‹</button>
+      <h2 id="monthLabel"></h2>
+      <button class="nav" id="nextM" aria-label="Mois suivant">›</button>
+    </div>
+    <div class="grid" id="grid"></div>
+  </section>
+
+  <section class="card legend">
+    <span><i class="sw" style="background:var(--period)"></i>Règles</span>
+    <span><i class="sw" style="background:var(--period-soft);outline:2px dashed var(--period);outline-offset:-3px"></i>Règles prévues</span>
+    <span><i class="sw" style="background:none"><svg class="ovum" viewBox="0 0 24 24"><use href="#ovum"/></svg></i>Ovulation estimée</span>
+    <span><i class="sw" style="background:var(--fert)"></i>Fenêtre fertile</span>
+    <span><i class="sw" style="background:#f4eeeb"><b class="heart">♥</b></i>Rapport</span>
+    <span><i class="sw" style="background:#f4eeeb">💧</i>Glaire cervicale</span>
+  </section>
+  <p class="disclaimer">Hachuré / pointillé = prédiction. Ovulation = début du cycle suivant − 14 j. Estimation indicative, pas une méthode de contraception.</p>
+</div>
+
+<button class="fab" id="todayBtn">＋ Noter aujourd'hui</button>
+
+<!-- Fiche du jour -->
+<dialog id="daySheet" class="sheet">
+  <div class="pad">
+    <div class="sheet-head"><h3 id="sheetTitle"></h3><button class="close" data-close aria-label="Fermer">✕</button></div>
+    <p class="muted" id="sheetInfo"></p>
+    <button class="toggle" data-k="start" style="--c:var(--accent)"><span class="ic">🌸</span><span class="t">Début de cycle<small>1er jour des règles</small></span><span class="ck"></span></button>
+    <button class="toggle" data-k="period" style="--c:var(--period)"><span class="ic">🩸</span><span class="t">Règles</span><span class="ck"></span></button>
+    <button class="toggle" data-k="sex" style="--c:#c2185b"><span class="ic">♥</span><span class="t">Rapport</span><span class="ck"></span></button>
+    <div class="lbl">💧 Glaire cervicale</div>
+    <div class="chips" id="mucusChips"></div>
+  </div>
+</dialog>
+
+<!-- Réglages -->
+<dialog id="setDlg" class="full">
+  <div class="pad set">
+    <div class="sheet-head"><h3>Réglages</h3><button class="close" data-close aria-label="Fermer">✕</button></div>
+
+    <h4>Cycle</h4>
+    <div class="item"><div>Durée de cycle par défaut<small id="avgInfo"></small></div><input type="number" id="sCycle" min="18" max="60" inputmode="numeric"></div>
+    <div class="item"><div>Durée des règles par défaut<small>Utilisée pour prévoir les prochaines règles</small></div><input type="number" id="sPeriod" min="1" max="12" inputmode="numeric"></div>
+    <div class="item"><div>Écart toléré<small>Alerte si un cycle s'écarte de la moyenne de plus de ce nombre de jours</small></div><input type="number" id="sTol" min="1" max="10" inputmode="numeric"></div>
+    <div class="item"><div>Phase lutéale<small>Ovulation = fin de cycle − ce nombre</small></div><input type="number" id="sLuteal" min="8" max="18" inputmode="numeric"></div>
+
+    <h4>Sécurité</h4>
+    <div class="item"><div>Mot de passe de sauvegarde<small id="keyInfo"></small></div><button class="btn" id="keyBtn"></button></div>
+    <div class="item"><div>Verrouillage par empreinte / Face ID<small id="bioInfo">Demandé à l'ouverture et après 1 min en arrière-plan</small></div><label class="switch"><input type="checkbox" id="bioSw"><span></span></label></div>
+
+    <h4>Sauvegarde fichier (chiffrée)</h4>
+    <div class="btnrow"><button class="btn" id="expBtn">⬇️ Exporter</button><button class="btn" id="impBtn">⬆️ Importer</button></div>
+    <input type="file" id="impFile" accept=".json,application/json" hidden>
+
+    <h4>Google Drive (chiffré)</h4>
+    <div class="item" style="display:block">
+      <div>Client ID Google<small>Voir le guide d'installation</small></div>
+      <input type="text" id="clientId" placeholder="xxxx.apps.googleusercontent.com" autocomplete="off" spellcheck="false" style="margin-top:8px">
+      <div class="btnrow">
+        <button class="btn primary" id="driveConnect">Connecter Drive</button>
+        <button class="btn" id="driveNow" hidden>Sauvegarder maintenant</button>
+        <button class="btn" id="driveRestore" hidden>Restaurer</button>
+        <button class="btn danger" id="driveOff" hidden>Désactiver</button>
+      </div>
+      <p class="note" id="driveInfo"></p>
+    </div>
+
+    <h4>Données</h4>
+    <div class="btnrow"><button class="btn danger" id="wipeBtn">Effacer toutes les données</button></div>
+    <p class="note">Toutes les données restent dans ce téléphone. Les sauvegardes (fichier et Drive) sont chiffrées en AES-256 avant de quitter l'appareil.</p>
+  </div>
+</dialog>
+
+<!-- Alerte régularité -->
+<dialog id="alertDlg" class="center">
+  <div class="pad">
+    <h3 style="margin:0 0 6px">⚠️ Cycle irrégulier</h3>
+    <p id="alertTxt" style="margin:0"></p>
+    <ul id="alertList"></ul>
+    <p class="muted">Les estimations d'ovulation et de fenêtre fertile sont moins fiables lorsque la durée des cycles varie. Si les irrégularités se répètent, un avis médical peut être utile.</p>
+    <div class="row"><button class="primary" data-close>Compris</button></div>
+  </div>
+</dialog>
+
+<!-- Statistiques -->
+<dialog id="statsDlg" class="full">
+  <div class="pad stats">
+    <div class="sheet-head"><h3>Statistiques</h3><button class="close" data-close aria-label="Fermer">✕</button></div>
+    <div class="chips" id="rangeChips" style="margin:10px 0 4px">
+      <button class="chip" data-r="6">6 derniers cycles</button>
+      <button class="chip" data-r="12">12 derniers</button>
+      <button class="chip" data-r="0">Tout</button>
+    </div>
+    <div id="statsBody"></div>
+  </div>
+</dialog>
+
+<!-- Mot de passe -->
+<dialog id="passDlg" class="center">
+  <form method="dialog">
+    <h3 id="passTitle"></h3>
+    <p class="muted" id="passHint"></p>
+    <input type="password" id="pass1" placeholder="Mot de passe" autocomplete="current-password">
+    <input type="password" id="pass2" placeholder="Confirmer le mot de passe" autocomplete="new-password">
+    <p class="err" id="passErr"></p>
+    <div class="row"><button type="button" id="passCancel">Annuler</button><button id="passOk" class="primary" value="ok">Valider</button></div>
+  </form>
+</dialog>
+
+<div id="toast"></div>
+
+<script>
+'use strict';
+/* ---------- Utilitaires dates ---------- */
+const $ = s => document.querySelector(s);
+const DAY = 86400000;
+const toNum = s => { const [y,m,d] = s.split('-').map(Number); return Math.round(Date.UTC(y,m-1,d)/DAY); };
+const toStr = n => new Date(n*DAY).toISOString().slice(0,10);
+const todayNum = () => { const d = new Date(); return Math.round(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())/DAY); };
+const fmt = (n, o={day:'numeric', month:'short'}) => new Date(n*DAY).toLocaleDateString('fr-FR', {...o, timeZone:'UTC'});
+const mean = a => a.reduce((x,y)=>x+y,0)/a.length;
+
+const MUCUS = [['seche','Sèche'],['collante','Collante'],['cremeuse','Crémeuse'],['aqueuse','Aqueuse'],['blanc',"Blanc d'œuf"]];
+const MUCUS_HI = new Set(['aqueuse','blanc']);
+const DEFAULT_DATA = { v:1, days:{}, settings:{ cycleLen:28, periodLen:5, luteal:14, tolerance:4 }, updated:0 };
+const OVUM = '<svg class="ovum" viewBox="0 0 24 24" aria-hidden="true"><use href="#ovum"/></svg>';
+
+/* ---------- Stockage ---------- */
+function loadJSON(k, def){ try { const v = JSON.parse(localStorage.getItem(k)); return v ? {...structuredClone(def), ...v} : structuredClone(def); } catch { return structuredClone(def); } }
+let data = loadJSON('mc.data', DEFAULT_DATA);
+data.settings = {...DEFAULT_DATA.settings, ...data.settings};
+let prefs = loadJSON('mc.prefs', {});
+function saveData(){ data.updated = Date.now(); localStorage.setItem('mc.data', JSON.stringify(data)); }
+function savePrefs(){ localStorage.setItem('mc.prefs', JSON.stringify(prefs)); }
+if (navigator.storage?.persist) navigator.storage.persist().catch(()=>{});
+
+function idb(){ return new Promise((res, rej) => { const r = indexedDB.open('menstry', 1); r.onupgradeneeded = () => r.result.createObjectStore('kv'); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); }); }
+async function kvGet(k){ const db = await idb(); return new Promise((res, rej) => { const q = db.transaction('kv').objectStore('kv').get(k); q.onsuccess = () => res(q.result); q.onerror = () => rej(q.error); }); }
+async function kvSet(k, v){ const db = await idb(); return new Promise((res, rej) => { const t = db.transaction('kv', 'readwrite'); t.objectStore('kv').put(v, k); t.oncomplete = () => res(); t.onerror = () => rej(t.error); }); }
+
+/* ---------- Calculs du cycle ---------- */
+function compute(){
+  const s = data.settings, L = +s.luteal || 14;
+  const starts = Object.keys(data.days).filter(k => data.days[k].start).sort().map(toNum);
+  const lens = [];
+  for (let i = 1; i < starts.length; i++){ const d = starts[i]-starts[i-1]; if (d >= 15 && d <= 60) lens.push(d); }
+  const recent = lens.slice(-6);
+  const avg = recent.length ? Math.round(mean(recent)) : (+s.cycleLen || 28);
+  const plens = [];
+  for (const st of starts){ let n = 0; while (n < 15 && data.days[toStr(st+n)]?.period) n++; if (n) plens.push(n); }
+  const plen = plens.length ? Math.round(mean(plens.slice(-6))) : (+s.periodLen || 5);
+
+  const fert = new Map(), predPeriod = new Set();
+  const markWin = (nextStart, pred) => {
+    const o = nextStart - L;
+    for (let d = o-5; d <= o+2; d++){
+      const prev = fert.get(d);
+      if (prev && !prev.pred && pred) continue;
+      fert.set(d, { ovu: d === o, pred });
+    }
+    return o;
+  };
+  // Cycles terminés : ovulation = fin de cycle (début du suivant) − 14
+  for (let i = 1; i < starts.length; i++) if (starts[i]-starts[i-1] <= 60) markWin(starts[i], false);
+
+  const info = { starts, avg, plen, nCycles: recent.length, fert, predPeriod, last:null };
+  if (starts.length){
+    const t = todayNum(), last = starts.at(-1), next = last + avg;
+    info.last = last; info.next = next;
+    info.cycleDay = t - last + 1;
+    info.late = Math.max(0, t - next);
+    info.ovu = markWin(next, true);
+    let ns = next;
+    for (let k = 0; k < 6; k++){
+      if (k) markWin(ns, true);
+      for (let d = 0; d < plen; d++) predPeriod.add(ns + d);
+      ns += avg;
+    }
+  }
+  return info;
+}
+
+/* ---------- Rendu ---------- */
+let view = (() => { const d = new Date(); return { y: d.getFullYear(), m: d.getMonth() }; })();
+let INFO = compute();
+
+function renderSummary(){
+  const i = INFO, el = $('#summary'), t = todayNum();
+  if (!i.last){
+    el.innerHTML = `<div class="big">Bienvenue</div><div class="phase">Toucher le premier jour des dernières règles sur le calendrier, puis cocher « Début de cycle ».</div>`;
+    return;
+  }
+  let phase = '', cls = '';
+  const f = i.fert.get(t);
+  if (data.days[toStr(t)]?.period){ phase = 'Règles'; cls = 'p'; }
+  else if (i.late > 0){ phase = `Règles en retard de ${i.late} jour${i.late>1?'s':''}`; cls = 'p'; }
+  else if (f?.ovu){ phase = 'Ovulation estimée aujourd’hui'; cls = 'f'; }
+  else if (f){ phase = 'Fenêtre fertile probable'; cls = 'f'; }
+  else { const d = i.next - t; phase = d === 0 ? 'Règles prévues aujourd’hui' : `Prochaines règles dans ${d} jour${d>1?'s':''}`; }
+  el.innerHTML = `
+    <div class="big">Jour ${i.cycleDay}</div>
+    <div class="phase ${cls}">${phase}</div>
+    <div class="rows">
+      <div><div class="k">Prochaines règles</div><div class="v">${fmt(i.next)}</div></div>
+      <div><div class="k">Ovulation estimée</div><div class="v">${OVUM} ${fmt(i.ovu)}</div></div>
+      <div><div class="k">Fenêtre fertile</div><div class="v">${fmt(i.ovu-5)} – ${fmt(i.ovu+2)}</div></div>
+      <div><div class="k">Cycle moyen</div><div class="v">${i.avg} j <span style="font-weight:400;color:var(--muted);font-size:13px">${i.nCycles ? `(${i.nCycles} cycle${i.nCycles>1?'s':''})` : '(défaut)'}</span></div></div>
+    </div>${regLine()}`;
+}
+
+function renderCal(){
+  const { y, m } = view, i = INFO, t = todayNum();
+  $('#monthLabel').textContent = new Date(Date.UTC(y, m, 1)).toLocaleDateString('fr-FR', { month:'long', year:'numeric', timeZone:'UTC' });
+  const first = Math.round(Date.UTC(y, m, 1)/DAY);
+  const dow = (new Date(first*DAY).getUTCDay() + 6) % 7;
+  const dim = new Date(Date.UTC(y, m+1, 0)).getUTCDate();
+  const cells = Math.ceil((dow + dim)/7)*7;
+  const g = $('#grid');
+  g.innerHTML = ['L','M','M','J','V','S','D'].map(d => `<div class="dow">${d}</div>`).join('');
+  for (let k = 0; k < cells; k++){
+    const n = first - dow + k, s = toStr(n), rec = data.days[s] || {}, d = new Date(n*DAY);
+    const c = ['day'];
+    if (d.getUTCMonth() !== m) c.push('out');
+    const f = i.fert.get(n);
+    if (rec.period) c.push('period');
+    else if (i.predPeriod.has(n) && n > i.last) c.push('pperiod');
+    else if (f){ c.push(f.ovu ? 'ovu' : 'fertile'); if (f.pred) c.push('pred'); }
+    if (rec.start) c.push('start');
+    if (n === t) c.push('today');
+    let b = '';
+    if (rec.sex) b += '<b class="heart">♥</b>';
+    if (rec.mucus) b += `<span class="drop${MUCUS_HI.has(rec.mucus) ? ' hi' : ''}">💧</span>`;
+    const btn = document.createElement('button');
+    btn.className = c.join(' ');
+    btn.dataset.d = s;
+    btn.setAttribute('aria-label', fmt(n, {weekday:'long', day:'numeric', month:'long'}));
+    btn.innerHTML = `<span class="n">${d.getUTCDate()}</span>${f?.ovu && !rec.period ? OVUM : ''}${b ? `<span class="badges">${b}</span>` : ''}`;
+    g.appendChild(btn);
+  }
+}
+
+function renderAll(){ INFO = compute(); renderSummary(); renderCal(); }
+
+/* ---------- Contrôle de régularité ---------- */
+const n1 = v => v.toFixed(1).replace('.0','').replace('.',',');
+// Analyse le cycle qui se termine au début de cycle `sNum`
+function checkCycle(sNum){
+  const st = Object.keys(data.days).filter(k => data.days[k].start).sort().map(toNum);
+  const idx = st.indexOf(sNum); if (idx < 1) return null;
+  const L = sNum - st[idx-1], tol = +data.settings.tolerance || 4, issues = [];
+  if (L < 15) return { L, issues: [`Cycle très court (${L} j) : vérifier qu'il s'agit bien d'un début de règles et non d'un saignement entre deux cycles.`] };
+  const prev = [];
+  for (let i = Math.max(1, idx-6); i < idx; i++){ const d = st[i] - st[i-1]; if (d >= 15 && d <= 60) prev.push(d); }
+  if (L < 21 || L > 35) issues.push(`Durée de ${L} j, en dehors de la plage habituelle de 21 à 35 jours.`);
+  let avg = null;
+  if (prev.length){ avg = mean(prev); const diff = L - avg; if (Math.abs(diff) > tol) issues.push(`${n1(Math.abs(diff))} j de ${diff > 0 ? 'plus' : 'moins'} que la moyenne des cycles précédents (${n1(avg)} j).`); }
+  const rec = [...prev.slice(-5), L];
+  if (rec.length >= 3){ const r = Math.max(...rec) - Math.min(...rec); if (r > 7) issues.push(`Écart de ${r} j entre le cycle le plus court et le plus long sur les ${rec.length} derniers cycles.`); }
+  return { L, avg, issues };
+}
+function showIrregular(res, fresh){
+  $('#alertTxt').textContent = fresh ? `Le cycle qui vient de se terminer a duré ${res.L} jours.` : `Le dernier cycle terminé a duré ${res.L} jours.`;
+  $('#alertList').innerHTML = res.issues.map(t => `<li>${t}</li>`).join('');
+  $('#alertDlg').showModal();
+}
+function regLine(){
+  const r = INFO.last != null ? checkCycle(INFO.last) : null;
+  if (!r) return '';
+  return r.issues.length
+    ? `<button class="reg warn" id="regWarn">⚠️ Dernier cycle irrégulier (${r.L} j) · voir</button>`
+    : `<div class="reg ok">✓ Dernier cycle régulier (${r.L} j)</div>`;
+}
+document.addEventListener('click', e => { if (e.target.closest('#regWarn')){ const r = checkCycle(INFO.last); if (r) showIrregular(r, false); } });
+
+/* ---------- Fiche du jour ---------- */
+let sheetDay = null;
+function openDay(s){ sheetDay = s; renderSheet(); $('#daySheet').showModal(); }
+function renderSheet(){
+  const rec = data.days[sheetDay] || {}, n = toNum(sheetDay), f = INFO.fert.get(n);
+  $('#sheetTitle').textContent = fmt(n, { weekday:'long', day:'numeric', month:'long' });
+  let info = '';
+  if (f?.ovu) info = f.pred ? 'Ovulation estimée (prévision)' : 'Ovulation estimée (cycle terminé)';
+  else if (f) info = f.pred ? 'Fenêtre fertile probable (prévision)' : 'Fenêtre fertile (cycle terminé)';
+  else if (INFO.predPeriod.has(n) && n > INFO.last && !rec.period) info = 'Règles prévues';
+  if (INFO.last && n >= INFO.last) info = `Jour ${n - INFO.last + 1} du cycle` + (info ? ' · ' + info : '');
+  $('#sheetInfo').textContent = info || ' ';
+  document.querySelectorAll('#daySheet .toggle').forEach(b => { const on = !!rec[b.dataset.k]; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); });
+  $('#mucusChips').innerHTML = MUCUS.map(([v, l]) => `<button class="chip${rec.mucus === v ? ' on' : ''}" data-v="${v}" aria-pressed="${rec.mucus === v}">${l}</button>`).join('');
+}
+function updateDay(fn){
+  const rec = { ...(data.days[sheetDay] || {}) };
+  fn(rec);
+  for (const k of Object.keys(rec)) if (!rec[k]) delete rec[k];
+  if (Object.keys(rec).length) data.days[sheetDay] = rec; else delete data.days[sheetDay];
+  saveData(); renderAll(); renderSheet(); syncSoon(true);
+}
+$('#daySheet').addEventListener('click', e => {
+  const t = e.target.closest('.toggle'), c = e.target.closest('.chip');
+  if (t){
+    const k = t.dataset.k, wasStart = !!data.days[sheetDay]?.start;
+    updateDay(r => {
+      r[k] = !r[k];
+      if (k === 'start' && r.start) r.period = true;
+      if (k === 'period' && !r.period) r.start = false;
+    });
+    if (k === 'start' && !wasStart && data.days[sheetDay]?.start){
+      const res = checkCycle(toNum(sheetDay));
+      if (res?.issues.length){ $('#daySheet').close(); showIrregular(res, true); }
+      else if (res) toast(`Cycle précédent : ${res.L} jours · régulier ✓`, 3500);
+    }
+  } else if (c){
+    updateDay(r => { r.mucus = r.mucus === c.dataset.v ? '' : c.dataset.v; });
+  } else if (e.target === e.currentTarget) e.currentTarget.close();
+});
+
+/* ---------- Toast & mot de passe ---------- */
+let toastT;
+function toast(msg, ms = 2600){ const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), ms); }
+
+function askPass({ title, hint = '', confirm = false }){
+  return new Promise(res => {
+    const dlg = $('#passDlg');
+    $('#passTitle').textContent = title; $('#passHint').textContent = hint; $('#passErr').textContent = '';
+    $('#pass1').value = ''; $('#pass2').value = '';
+    $('#pass2').hidden = !confirm;
+    $('#pass1').autocomplete = confirm ? 'new-password' : 'current-password';
+    const ok = e => {
+      const p1 = $('#pass1').value, p2 = $('#pass2').value;
+      if (confirm && p1.length < 8){ e.preventDefault(); $('#passErr').textContent = '8 caractères minimum (une phrase de 4–5 mots est idéale).'; return; }
+      if (confirm && p1 !== p2){ e.preventDefault(); $('#passErr').textContent = 'Les deux mots de passe ne correspondent pas.'; return; }
+      if (!p1){ e.preventDefault(); return; }
+    };
+    $('#passOk').onclick = ok;
+    $('#passCancel').onclick = () => dlg.close('cancel');
+    dlg.onclose = () => { const v = dlg.returnValue === 'ok' ? $('#pass1').value : null; $('#pass1').value = ''; $('#pass2').value = ''; res(v); };
+    dlg.returnValue = '';
+    dlg.showModal(); $('#pass1').focus();
+  });
+}
+
+/* ---------- Chiffrement (Web Crypto) ---------- */
+const enc = new TextEncoder(), dec = new TextDecoder();
+function b64(buf){ const a = new Uint8Array(buf); let s = ''; for (let i = 0; i < a.length; i += 0x8000) s += String.fromCharCode.apply(null, a.subarray(i, i + 0x8000)); return btoa(s); }
+const unb64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+const rand = n => crypto.getRandomValues(new Uint8Array(n));
+const ITER = 600000;
+async function deriveKey(pass, salt){
+  const base = await crypto.subtle.importKey('raw', enc.encode(pass.normalize('NFC')), 'PBKDF2', false, ['deriveKey']);
+  return crypto.subtle.deriveKey({ name:'PBKDF2', salt, iterations:ITER, hash:'SHA-256' }, base, { name:'AES-GCM', length:256 }, false, ['encrypt','decrypt']);
+}
+async function encryptWith(key, salt, obj){
+  const iv = rand(12);
+  const ct = await crypto.subtle.encrypt({ name:'AES-GCM', iv }, key, enc.encode(JSON.stringify(obj)));
+  return { app:'menstry', v:1, kdf:`PBKDF2-SHA256-${ITER}`, cipher:'AES-256-GCM', salt:b64(salt), iv:b64(iv), ct:b64(ct) };
+}
+async function decryptWith(key, p){
+  const pt = await crypto.subtle.decrypt({ name:'AES-GCM', iv:unb64(p.iv) }, key, unb64(p.ct));
+  return JSON.parse(dec.decode(pt));
+}
+async function storeKey(key, salt){
+  const check = await encryptWith(key, salt, 'menstry-ok');
+  await kvSet('key', key); await kvSet('salt', salt); await kvSet('check', check);
+  prefs.hasKey = true; savePrefs();
+}
+async function verifyPass(pass){
+  const check = await kvGet('check'); if (!check) return false;
+  try { const k = await deriveKey(pass, unb64(check.salt)); return (await decryptWith(k, check)) === 'menstry-ok'; } catch { return false; }
+}
+async function setupPassword(){
+  const p = await askPass({ title: prefs.hasKey ? 'Nouveau mot de passe' : 'Mot de passe de sauvegarde', hint: "Il chiffre les sauvegardes et n'est jamais enregistré. Il ne sera redemandé que pour une restauration sur un nouveau téléphone. En cas d'oubli, les sauvegardes sont perdues.", confirm: true });
+  if (!p) return false;
+  toast('Création de la clé…');
+  const salt = rand(16);
+  await storeKey(await deriveKey(p, salt), salt);
+  toast('Mot de passe enregistré ✓');
+  return true;
+}
+async function encryptCurrent(){
+  const key = await kvGet('key'), salt = await kvGet('salt');
+  if (!key) throw new Error('Aucun mot de passe de sauvegarde');
+  return encryptWith(key, salt, data);
+}
+async function decryptPayload(p){
+  if (p?.app !== 'menstry' || !p.ct) throw new Error('Fichier non reconnu');
+  const key = await kvGet('key'), salt = await kvGet('salt');
+  if (key && salt && b64(salt) === p.salt){ try { return { obj: await decryptWith(key, p) }; } catch {} }
+  for (let tries = 0; tries < 3; tries++){
+    const pass = await askPass({ title:'Mot de passe de la sauvegarde', hint: tries ? 'Mot de passe incorrect, nouvel essai.' : 'Mot de passe utilisé pour cette sauvegarde.' });
+    if (!pass) return null;
+    toast('Déchiffrement…');
+    const k = await deriveKey(pass, unb64(p.salt));
+    try { return { obj: await decryptWith(k, p), key: k, salt: unb64(p.salt) }; } catch {}
+  }
+  throw new Error('Mot de passe incorrect');
+}
+async function applyImported(res){
+  if (!res) return false;
+  const o = res.obj;
+  if (!o || typeof o.days !== 'object') throw new Error('Contenu invalide');
+  if (Object.keys(data.days).length && !confirm('Remplacer les données actuelles de ce téléphone par la sauvegarde ?')) return false;
+  data = { ...structuredClone(DEFAULT_DATA), ...o, settings: { ...DEFAULT_DATA.settings, ...o.settings } };
+  saveData();
+  if (res.key && !prefs.hasKey) await storeKey(res.key, res.salt);
+  renderAll(); renderSettings();
+  toast('Données restaurées ✓');
+  return true;
+}
+
+/* ---------- Export / import fichier ---------- */
+$('#expBtn').onclick = async () => {
+  try {
+    if (!prefs.hasKey && !(await setupPassword())) return;
+    const payload = await encryptCurrent();
+    const name = `menstry-${toStr(todayNum())}.json`;
+    const blob = new Blob([JSON.stringify(payload)], { type:'application/json' });
+    const file = new File([blob], name, { type:'application/json' });
+    if (navigator.canShare?.({ files:[file] })){
+      try { await navigator.share({ files:[file], title:'Sauvegarde Menstry' }); return; }
+      catch (e){ if (e.name === 'AbortError') return; }
+    }
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+    toast('Sauvegarde chiffrée exportée ✓');
+  } catch (e){ toast('Erreur : ' + e.message); }
+};
+$('#impBtn').onclick = () => $('#impFile').click();
+$('#impFile').onchange = async e => {
+  const f = e.target.files[0]; e.target.value = '';
+  if (!f) return;
+  try { await applyImported(await decryptPayload(JSON.parse(await f.text()))); syncSoon(false); }
+  catch (err){ toast('Import impossible : ' + err.message); }
+};
+
+/* ---------- Google Drive (appDataFolder) ---------- */
+const SCOPE = 'https://www.googleapis.com/auth/drive.appdata';
+const DRIVE_FILE = 'menstry-backup.json';
+let tokenClient = null, accessToken = null, tokenExp = 0, tokenWaiters = [], syncTimer = null, syncing = false;
+const tokenValid = () => accessToken && Date.now() < tokenExp;
+
+function loadScript(src){ return new Promise((res, rej) => { if (document.querySelector(`script[src="${src}"]`) && window.google?.accounts) return res(); const s = document.createElement('script'); s.src = src; s.async = true; s.onload = res; s.onerror = () => rej(new Error('Chargement Google impossible (hors ligne ?)')); document.head.appendChild(s); }); }
+async function initDrive(){
+  if (!prefs.clientId) return;
+  try {
+    await loadScript('https://accounts.google.com/gsi/client');
+    tokenClient = google.accounts.oauth2.initTokenClient({
+      client_id: prefs.clientId, scope: SCOPE,
+      callback: r => { const w = tokenWaiters; tokenWaiters = []; if (r.error){ w.forEach(x => x.rej(new Error(r.error))); return; } accessToken = r.access_token; tokenExp = Date.now() + (r.expires_in - 60)*1000; w.forEach(x => x.res(accessToken)); },
+      error_callback: e => { const w = tokenWaiters; tokenWaiters = []; w.forEach(x => x.rej(new Error(e?.type === 'popup_closed' ? 'Fenêtre Google fermée' : (e?.type || 'Autorisation refusée')))); }
+    });
+  } catch (e){ console.warn(e); }
+  renderCloud();
+}
+// Doit être appelé directement dans un geste utilisateur (clic) pour éviter le blocage du popup.
+function requestToken(consent){
+  return new Promise((res, rej) => {
+    if (tokenValid()) return res(accessToken);
+    if (!tokenClient) return rej(new Error('Google pas encore chargé, nouvel essai dans un instant'));
+    tokenWaiters.push({ res, rej });
+    tokenClient.requestAccessToken({ prompt: consent ? 'consent' : '' });
+  });
+}
+async function gfetch(url, opts = {}){
+  const r = await fetch(url, { ...opts, headers: { Authorization: 'Bearer ' + accessToken, ...(opts.headers || {}) } });
+  if (r.status === 401){ accessToken = null; throw new Error('Session Google expirée'); }
+  if (!r.ok && r.status !== 404) throw new Error('Drive : erreur ' + r.status);
+  return r;
+}
+async function driveFind(){
+  const q = encodeURIComponent(`name='${DRIVE_FILE}'`);
+  const r = await gfetch(`https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&q=${q}&fields=files(id,modifiedTime)&orderBy=modifiedTime desc`);
+  const j = await r.json(); return j.files?.[0] || null;
+}
+async function driveUpload(){
+  if (syncing) return; syncing = true; renderCloud();
+  try {
+    const body = JSON.stringify(await encryptCurrent());
+    let id = prefs.driveFileId;
+    if (id){
+      const r = await gfetch(`https://www.googleapis.com/upload/drive/v3/files/${id}?uploadType=media`, { method:'PATCH', headers:{ 'Content-Type':'application/json' }, body });
+      if (r.status === 404) id = null;
+    }
+    if (!id){
+      const ex = await driveFind();
+      if (ex){ id = ex.id; await gfetch(`https://www.googleapis.com/upload/drive/v3/files/${id}?uploadType=media`, { method:'PATCH', headers:{ 'Content-Type':'application/json' }, body }); }
+      else {
+        const bd = 'mcb' + Math.random().toString(36).slice(2);
+        const mp = `--${bd}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${JSON.stringify({ name: DRIVE_FILE, parents:['appDataFolder'] })}\r\n--${bd}\r\nContent-Type: application/json\r\n\r\n${body}\r\n--${bd}--`;
+        const r = await gfetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id', { method:'POST', headers:{ 'Content-Type':`multipart/related; boundary=${bd}` }, body: mp });
+        id = (await r.json()).id;
+      }
+    }
+    prefs.driveFileId = id; prefs.dirty = false; prefs.lastSync = Date.now(); prefs.syncErr = ''; savePrefs();
+  } catch (e){ prefs.syncErr = e.message; savePrefs(); throw e; }
+  finally { syncing = false; renderCloud(); if ($('#setDlg').open) renderSettings(); }
+}
+function scheduleUpload(){ clearTimeout(syncTimer); syncTimer = setTimeout(() => driveUpload().catch(e => console.warn(e)), 1200); }
+function syncSoon(gesture){
+  if (!prefs.driveOn || !prefs.hasKey) return;
+  prefs.dirty = true; savePrefs(); renderCloud();
+  if (tokenValid()) return scheduleUpload();
+  if (gesture && tokenClient) requestToken(false).then(scheduleUpload).catch(e => { prefs.syncErr = e.message; savePrefs(); renderCloud(); });
+}
+function renderCloud(){
+  const b = $('#cloudBtn');
+  b.hidden = !prefs.driveOn;
+  b.classList.toggle('err', !!(prefs.dirty && prefs.syncErr));
+  b.textContent = syncing ? '☁️ …' : prefs.dirty ? (prefs.syncErr ? '☁️ !' : '☁️ ↑') : '☁️ ✓';
+  b.title = syncing ? 'Synchronisation…' : prefs.dirty ? 'Toucher pour synchroniser' : 'Sauvegardé sur Drive';
+}
+$('#cloudBtn').onclick = () => {
+  if (!prefs.dirty){ toast(prefs.lastSync ? `Sauvegardé sur Drive le ${new Date(prefs.lastSync).toLocaleString('fr-FR')}` : 'Drive connecté'); return; }
+  requestToken(false).then(driveUpload).then(() => toast('Sauvegardé sur Drive ✓')).catch(e => toast('Drive : ' + e.message));
+};
+
+/* ---------- Empreinte / Face ID (WebAuthn) ---------- */
+async function registerBio(){
+  const cred = await navigator.credentials.create({ publicKey: {
+    challenge: rand(32), rp: { name:'Menstry' },
+    user: { id: rand(16), name:'menstry', displayName:'Menstry' },
+    pubKeyCredParams: [{ type:'public-key', alg:-7 }, { type:'public-key', alg:-257 }],
+    authenticatorSelection: { authenticatorAttachment:'platform', userVerification:'required', residentKey:'discouraged' },
+    timeout: 60000, attestation:'none'
+  }});
+  prefs.credId = b64(cred.rawId); savePrefs();
+}
+async function verifyBio(){
+  const a = await navigator.credentials.get({ publicKey: {
+    challenge: rand(32), allowCredentials: [{ type:'public-key', id: unb64(prefs.credId), transports:['internal'] }],
+    userVerification:'required', timeout: 60000
+  }});
+  const flags = new Uint8Array(a.response.authenticatorData)[32];
+  return !!(flags & 0x04); // bit UV : l'utilisatrice a bien été vérifiée
+}
+let hiddenAt = 0;
+function lockNow(){
+  document.querySelectorAll('dialog[open]').forEach(d => d.close());
+  document.body.classList.add('locked'); $('#lock').hidden = false; $('#lockErr').textContent = '';
+  $('#unlockPass').hidden = !prefs.hasKey;
+}
+function unlockUI(){ document.body.classList.remove('locked'); $('#lock').hidden = true; renderAll(); }
+async function tryBio(silent){
+  try { if (await verifyBio()) unlockUI(); else $('#lockErr').textContent = 'Vérification non confirmée.'; }
+  catch (e){ if (!silent) $('#lockErr').textContent = e.name === 'NotAllowedError' ? 'Annulé ou non reconnu. Toucher Déverrouiller pour réessayer.' : 'Erreur : ' + e.message; }
+}
+$('#unlockBtn').onclick = () => tryBio(false);
+$('#unlockPass').onclick = async () => {
+  const p = await askPass({ title:'Mot de passe', hint:'Mot de passe de sauvegarde.' });
+  if (!p) return;
+  $('#lockErr').textContent = 'Vérification…';
+  if (await verifyPass(p)) unlockUI(); else $('#lockErr').textContent = 'Mot de passe incorrect.';
+};
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden){ hiddenAt = Date.now(); return; }
+  if (document.body.classList.contains('locked')) return;
+  if (prefs.lockOn && hiddenAt && Date.now() - hiddenAt > 60000){ lockNow(); tryBio(true); }
+  else renderAll();
+});
+
+/* ---------- Réglages ---------- */
+function renderSettings(){
+  const s = data.settings;
+  $('#sCycle').value = s.cycleLen; $('#sPeriod').value = s.periodLen; $('#sLuteal').value = s.luteal; $('#sTol').value = s.tolerance;
+  $('#avgInfo').textContent = INFO.nCycles ? `Moyenne calculée : ${INFO.avg} j sur ${INFO.nCycles} cycle(s) — utilisée en priorité` : 'Utilisée tant qu’aucun cycle complet n’est noté (2 débuts de cycle)';
+  $('#keyInfo').textContent = prefs.hasKey ? 'Configuré · clé gardée dans ce téléphone' : 'Nécessaire pour les sauvegardes';
+  $('#keyBtn').textContent = prefs.hasKey ? 'Changer' : 'Configurer';
+  $('#bioSw').checked = !!prefs.lockOn;
+  $('#clientId').value = prefs.clientId || '';
+  const on = !!prefs.driveOn;
+  $('#driveConnect').hidden = on; $('#driveNow').hidden = !on; $('#driveRestore').hidden = !on; $('#driveOff').hidden = !on;
+  $('#driveConnect').disabled = !prefs.clientId;
+  $('#driveInfo').textContent = !prefs.hasKey ? 'Configurer d’abord le mot de passe de sauvegarde.'
+    : on ? (prefs.lastSync ? `Dernière sauvegarde : ${new Date(prefs.lastSync).toLocaleString('fr-FR')}` : 'Connecté') + (prefs.syncErr && prefs.dirty ? ` · Erreur : ${prefs.syncErr}` : '')
+    : 'Sauvegarde automatique, chiffrée, dans un dossier caché du Drive.';
+}
+$('#setBtn').onclick = () => { renderSettings(); $('#setDlg').showModal(); };
+for (const [id, k] of [['#sCycle','cycleLen'], ['#sPeriod','periodLen'], ['#sLuteal','luteal'], ['#sTol','tolerance']]){
+  $(id).onchange = e => { const v = parseInt(e.target.value, 10); if (!v) return renderSettings(); data.settings[k] = v; saveData(); renderAll(); renderSettings(); syncSoon(false); };
+}
+$('#keyBtn').onclick = async () => {
+  if (prefs.hasKey){
+    const old = await askPass({ title:'Mot de passe actuel', hint:'Pour confirmer le changement.' });
+    if (!old) return;
+    if (!(await verifyPass(old))) return toast('Mot de passe incorrect');
+  }
+  if (await setupPassword()){ renderSettings(); syncSoon(false); }
+};
+$('#bioSw').onchange = async e => {
+  if (e.target.checked){
+    if (!window.PublicKeyCredential || !window.isSecureContext){ e.target.checked = false; return toast('Non disponible : l’app doit être ouverte en https'); }
+    if (!prefs.hasKey){
+      e.target.checked = false;
+      toast('Un mot de passe de secours est d’abord nécessaire', 3500);
+      if (!(await setupPassword())) return;
+      renderSettings(); toast('Mot de passe enregistré. Réactiver le verrouillage.', 3500); return;
+    }
+    try { await registerBio(); prefs.lockOn = true; savePrefs(); toast('Verrouillage activé ✓'); }
+    catch (err){ e.target.checked = false; toast(err.name === 'NotAllowedError' ? 'Annulé' : 'Empreinte indisponible : ' + err.message); }
+  } else {
+    try { if (!(await verifyBio())) throw new Error(); prefs.lockOn = false; delete prefs.credId; savePrefs(); toast('Verrouillage désactivé'); }
+    catch { e.target.checked = true; toast('Vérification requise pour désactiver'); }
+  }
+};
+$('#clientId').onchange = e => {
+  prefs.clientId = e.target.value.trim(); tokenClient = null; accessToken = null; savePrefs();
+  renderSettings(); if (prefs.clientId) initDrive();
+};
+$('#driveConnect').onclick = () => {
+  if (!prefs.hasKey) return toast('Configurer d’abord le mot de passe de sauvegarde');
+  requestToken(true).then(async () => {
+    prefs.driveOn = true; savePrefs();
+    const ex = await driveFind();
+    if (ex){
+      prefs.driveFileId = ex.id; savePrefs();
+      if (!Object.keys(data.days).length && confirm('Une sauvegarde existe déjà sur Google Drive. La restaurer maintenant ?')){
+        const r = await gfetch(`https://www.googleapis.com/drive/v3/files/${ex.id}?alt=media`);
+        await applyImported(await decryptPayload(await r.json()));
+        prefs.dirty = false; prefs.lastSync = Date.now(); savePrefs();
+        renderSettings(); renderCloud(); return;
+      }
+    }
+    await driveUpload(); toast('Drive connecté ✓');
+  }).catch(e => toast('Drive : ' + e.message)).finally(() => { renderSettings(); renderCloud(); });
+};
+$('#driveNow').onclick = () => { requestToken(false).then(driveUpload).then(() => toast('Sauvegardé sur Drive ✓')).catch(e => toast('Drive : ' + e.message)); };
+$('#driveRestore').onclick = () => {
+  requestToken(false).then(async () => {
+    const ex = await driveFind(); if (!ex) return toast('Aucune sauvegarde sur Drive');
+    const r = await gfetch(`https://www.googleapis.com/drive/v3/files/${ex.id}?alt=media`);
+    if (await applyImported(await decryptPayload(await r.json()))){ prefs.dirty = false; prefs.driveFileId = ex.id; savePrefs(); renderCloud(); }
+  }).catch(e => toast('Restauration impossible : ' + e.message));
+};
+$('#driveOff').onclick = () => {
+  if (!confirm('Désactiver la sauvegarde Drive ? (la sauvegarde existante reste sur Google Drive)')) return;
+  prefs.driveOn = false; prefs.dirty = false; savePrefs();
+  if (accessToken && window.google?.accounts) google.accounts.oauth2.revoke(accessToken, () => {});
+  accessToken = null; renderSettings(); renderCloud();
+};
+$('#wipeBtn').onclick = async () => {
+  if (!confirm('Effacer TOUTES les données de ce téléphone ?')) return;
+  if (!confirm('Vraiment ? Cette action est irréversible (les sauvegardes Drive/fichier ne sont pas touchées).')) return;
+  localStorage.clear(); indexedDB.deleteDatabase('menstry'); location.reload();
+};
+
+/* ---------- Statistiques ---------- */
+let statsRange = 6;
+const dm = n => { const d = new Date(n*DAY); return `${d.getUTCDate()}/${d.getUTCMonth()+1}`; };
+function cycleStats(){
+  const L = +data.settings.luteal || 14, st = INFO.starts, out = [];
+  for (let i = 0; i < st.length - 1; i++){
+    const s = st[i], e = st[i+1], len = e - s;
+    if (len < 15 || len > 60) continue;
+    let p = 0; while (p < 15 && data.days[toStr(s+p)]?.period) p++;
+    const ovu = e - L; let sex = 0, sexF = 0;
+    for (let d = s; d < e; d++){ if (data.days[toStr(d)]?.sex){ sex++; if (d >= ovu-5 && d <= ovu+2) sexF++; } }
+    out.push({ start:s, end:e, len, p, ovuDay: ovu - s + 1, sex, sexF });
+  }
+  return out;
+}
+function niceStep(raw){ const p = Math.pow(10, Math.floor(Math.log10(raw))); const f = raw/p; return (f <= 1 ? 1 : f <= 2 ? 2 : f <= 5 ? 5 : 10) * p; }
+
+// Graphique SVG mono-série (ligne ou barres) avec réticule + info-bulle au toucher
+function chart(pts, { type = 'line', color, avg = null, zero = false }){
+  const W = 340, H = 170, ml = 28, mr = 10, mt = 16, mb = 22, iw = W-ml-mr, ih = H-mt-mb, n = pts.length;
+  const ys = pts.map(p => p.y);
+  let lo = zero ? 0 : Math.min(...ys, avg ?? Infinity) - 2, hi = Math.max(...ys, avg ?? -Infinity) + 2;
+  const step = niceStep(Math.max(1, (hi - lo)/4));
+  lo = Math.max(0, Math.floor(lo/step)*step); hi = Math.ceil(hi/step)*step; if (hi === lo) hi = lo + step;
+  const X = type === 'bar' ? i => ml + iw*(i+0.5)/n : i => n === 1 ? ml + iw/2 : ml + 10 + (iw-20)*i/(n-1);
+  const Y = v => mt + ih*(1 - (v-lo)/(hi-lo));
+  let g = '';
+  for (let v = lo; v <= hi + 1e-9; v += step) g += `<line x1="${ml}" x2="${W-mr}" y1="${Y(v)}" y2="${Y(v)}" stroke="#efe7e3" stroke-width="1"/><text x="${ml-6}" y="${Y(v)+3}" text-anchor="end">${v}</text>`;
+  const k = Math.ceil(n/6);
+  pts.forEach((p, i) => { if ((n-1-i) % k === 0) g += `<text x="${X(i)}" y="${H-6}" text-anchor="middle">${p.x}</text>`; });
+  if (avg != null) g += `<line x1="${ml}" x2="${W-mr}" y1="${Y(avg)}" y2="${Y(avg)}" stroke="#8a7f83" stroke-width="1.2" stroke-dasharray="4 4"/>`;
+  let m = '';
+  if (type === 'bar'){
+    const bw = Math.min(22, iw/n*0.62), base = Y(lo);
+    pts.forEach((p, i) => { const x = X(i) - bw/2, y = Y(p.y), r = Math.min(4, (base-y)/2, bw/2);
+      m += `<path class="mk" d="M${x},${base} V${y+r} Q${x},${y} ${x+r},${y} H${x+bw-r} Q${x+bw},${y} ${x+bw},${y+r} V${base} Z" fill="${color}"/>`; });
+  } else {
+    m += `<path d="${pts.map((p, i) => `${i ? 'L' : 'M'}${X(i)},${Y(p.y)}`).join(' ')}" fill="none" stroke="${color}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>`;
+    pts.forEach((p, i) => { m += `<circle class="mk" cx="${X(i)}" cy="${Y(p.y)}" r="4" fill="${color}" stroke="#fff" stroke-width="2"/>`; });
+  }
+  const last = pts.at(-1);
+  m += `<text class="lab" x="${X(n-1)}" y="${Y(last.y) - 9}" text-anchor="middle">${last.y}</text>`;
+  const xs = pts.map((_, i) => +X(i).toFixed(1));
+  return `<div class="chart" data-xs="${xs.join(',')}" data-tips="${encodeURIComponent(JSON.stringify(pts.map(p => p.tip)))}">
+    <svg viewBox="0 0 ${W} ${H}" role="img">${g}<line class="xh" y1="${mt}" y2="${H-mb}" stroke="#2b2326" stroke-width="1" opacity="0"/>${m}<rect x="${ml}" y="0" width="${iw}" height="${H}" fill="transparent"/></svg>
+    <div class="ctip"></div></div>`;
+}
+function wireCharts(root){
+  root.querySelectorAll('.chart').forEach(c => {
+    const xs = c.dataset.xs.split(',').map(Number), tips = JSON.parse(decodeURIComponent(c.dataset.tips));
+    const svg = c.querySelector('svg'), tip = c.querySelector('.ctip'), xh = svg.querySelector('.xh'), mks = svg.querySelectorAll('.mk');
+    const show = e => {
+      const r = svg.getBoundingClientRect(), x = (e.clientX - r.left) * 340 / r.width;
+      let i = 0; xs.forEach((v, j) => { if (Math.abs(v - x) < Math.abs(xs[i] - x)) i = j; });
+      xh.setAttribute('x1', xs[i]); xh.setAttribute('x2', xs[i]); xh.setAttribute('opacity', .25);
+      mks.forEach((mk, j) => { mk.style.opacity = j === i ? 1 : .55; if (mk.tagName === 'circle') mk.setAttribute('r', j === i ? 6 : 4); });
+      tip.innerHTML = tips[i]; tip.classList.add('show');
+      const px = xs[i] / 340 * r.width, tw = tip.offsetWidth;
+      tip.style.left = Math.min(r.width - tw/2, Math.max(tw/2, px)) + 'px';
+      tip.style.top = '-30px';
+    };
+    const hide = () => { tip.classList.remove('show'); xh.setAttribute('opacity', 0); mks.forEach(mk => { mk.style.opacity = 1; if (mk.tagName === 'circle') mk.setAttribute('r', 4); }); };
+    svg.addEventListener('pointerdown', show); svg.addEventListener('pointermove', show);
+    svg.addEventListener('pointerleave', e => { if (e.pointerType === 'mouse') hide(); });
+    c._hide = hide;
+  });
+}
+document.addEventListener('pointerdown', e => { document.querySelectorAll('.chart').forEach(c => { if (!c.contains(e.target)) c._hide?.(); }); });
+function overview(cyc){
+  const L = +data.settings.luteal || 14, rows = cyc.slice(-8).map(c => ({ s: c.start, e: c.end, len: c.len, cur: false }));
+  if (INFO.last != null) rows.push({ s: INFO.last, e: INFO.next, len: Math.max(INFO.avg, todayNum() - INFO.last + 1), cur: true });
+  const max = Math.max(...rows.map(r => r.len));
+  return rows.reverse().map(r => {
+    const ovu = r.e - L, t = todayNum();
+    let cells = '';
+    for (let d = 0; d < r.len; d++){
+      const n = r.s + d, rec = data.days[toStr(n)] || {}, c = [];
+      if (rec.period) c.push('p'); else if (n === ovu) c.push('o'); else if (n >= ovu-5 && n <= ovu+2) c.push('f');
+      if (r.cur && n > t) c.push('fut');
+      if (rec.sex) c.push('s'); if (rec.mucus) c.push('m');
+      cells += `<i class="${c.join(' ')}" title="${fmt(n)}"></i>`;
+    }
+    return `<div class="ov-row"><div class="ov-lab"><b>${fmt(r.s)}</b><br>${r.cur ? 'en cours' : r.len + ' j'}</div><div class="ov-cells" style="grid-template-columns:repeat(${max},1fr)">${cells}</div></div>`;
+  }).join('');
+}
+function renderStats(){
+  document.querySelectorAll('#rangeChips .chip').forEach(b => b.classList.toggle('on', +b.dataset.r === statsRange));
+  const all = cycleStats(), cyc = statsRange ? all.slice(-statsRange) : all, body = $('#statsBody');
+  if (!cyc.length){
+    body.innerHTML = `<div class="empty">📈<br><br>Les statistiques apparaissent dès que deux débuts de cycle sont marqués (un cycle complet).</div>`;
+    return;
+  }
+  const lens = cyc.map(c => c.len), avg = mean(lens);
+  const sd = Math.sqrt(mean(lens.map(l => (l-avg)**2)));
+  const reg = cyc.length < 3 ? '—' : sd <= 2 ? 'Très régulier' : sd <= 4 ? 'Régulier' : 'Irrégulier';
+  const ps = cyc.filter(c => c.p).map(c => c.p);
+  const sexT = cyc.reduce((a, c) => a + c.sex, 0), sexF = cyc.reduce((a, c) => a + c.sexF, 0);
+  body.innerHTML = `
+    <div class="tiles">
+      <div class="tile"><div class="s">Cycle moyen</div><div class="v">${n1(avg)} j</div></div>
+      <div class="tile"><div class="s">Min – max</div><div class="v">${Math.min(...lens)}–${Math.max(...lens)} j</div></div>
+      <div class="tile"><div class="s">Régularité</div><div class="v" style="font-size:15px">${reg}</div>${cyc.length >= 3 ? `<div class="s">± ${n1(sd)} j</div>` : ''}</div>
+      <div class="tile"><div class="s">Règles moy.</div><div class="v">${ps.length ? n1(mean(ps)) + ' j' : '—'}</div></div>
+      <div class="tile"><div class="s">Ovulation moy.</div><div class="v">J${Math.round(mean(cyc.map(c => c.ovuDay)))}</div></div>
+      <div class="tile"><div class="s">Cycles</div><div class="v">${cyc.length}</div></div>
+    </div>
+    <section class="card"><p class="ch-title">Durée des cycles</p><p class="ch-sub">En jours · pointillé = moyenne (${n1(avg)} j) · toucher un point pour le détail</p>
+      ${chart(cyc.map(c => ({ x: dm(c.start), y: c.len, tip: `Cycle du ${fmt(c.start)} : <b>${c.len} j</b>` })), { color: '#b8405e', avg })}</section>
+    <section class="card"><p class="ch-title">Jour d'ovulation estimé</p><p class="ch-sub">Jour du cycle (fin de cycle − ${data.settings.luteal})</p>
+      ${chart(cyc.map(c => ({ x: dm(c.start), y: c.ovuDay, tip: `Cycle du ${fmt(c.start)} : ovulation <b>J${c.ovuDay}</b> (${fmt(c.end - (+data.settings.luteal||14))})` })), { color: '#2e9e66' })}</section>
+    ${ps.length ? `<section class="card"><p class="ch-title">Durée des règles</p><p class="ch-sub">En jours</p>
+      ${chart(cyc.map(c => ({ x: dm(c.start), y: c.p, tip: `Cycle du ${fmt(c.start)} : <b>${c.p} j</b> de règles` })), { type: 'bar', color: '#d94862', zero: true })}</section>` : ''}
+    ${sexT ? `<section class="card"><p class="ch-title">Rapports par cycle</p><p class="ch-sub">${sexF} sur ${sexT} pendant la fenêtre fertile estimée</p>
+      ${chart(cyc.map(c => ({ x: dm(c.start), y: c.sex, tip: `Cycle du ${fmt(c.start)} : <b>${c.sex}</b> rapport${c.sex > 1 ? 's' : ''}, dont ${c.sexF} en fenêtre fertile` })), { type: 'bar', color: '#c2185b', zero: true })}</section>` : ''}
+    <section class="card"><p class="ch-title">Mes cycles</p><p class="ch-sub">Un rang par cycle, un carré par jour (le plus récent en haut)</p>
+      ${overview(all)}
+      <div class="ov-legend">
+        <span><i style="background:var(--period)"></i>Règles</span><span><i style="background:var(--fert)"></i>Fenêtre fertile</span>
+        <span><i style="background:var(--ovu)"></i>Ovulation</span><span><i style="background:#f1ebe8"><b style="position:absolute;left:3px;top:3px;width:6px;height:6px;border-radius:50%;background:#c2185b"></b></i>Rapport</span>
+        <span><i style="background:#f1ebe8;box-shadow:inset 0 -3px 0 var(--mucus)"></i>Glaire</span>
+      </div></section>
+    <details class="tbl"><summary>Voir en tableau</summary>
+      <table><tr><th>Début</th><th>Durée</th><th>Règles</th><th>Ovulation</th><th>Rapports</th></tr>
+      ${cyc.slice().reverse().map(c => `<tr><td>${fmt(c.start, {day:'numeric', month:'short', year:'2-digit'})}</td><td>${c.len} j</td><td>${c.p || '—'} j</td><td>J${c.ovuDay}</td><td>${c.sex}</td></tr>`).join('')}
+      </table></details>`;
+  wireCharts(body);
+}
+$('#statsBtn').onclick = () => { renderStats(); $('#statsDlg').showModal(); };
+$('#rangeChips').onclick = e => { const b = e.target.closest('.chip'); if (!b) return; statsRange = +b.dataset.r; renderStats(); };
+
+/* ---------- Navigation ---------- */
+document.querySelectorAll('[data-close]').forEach(b => b.onclick = () => b.closest('dialog').close());
+$('#setDlg').addEventListener('click', e => { if (e.target === e.currentTarget) e.currentTarget.close(); });
+$('#grid').onclick = e => { const b = e.target.closest('.day'); if (b) openDay(b.dataset.d); };
+$('#prevM').onclick = () => { view.m--; if (view.m < 0){ view.m = 11; view.y--; } renderCal(); };
+$('#nextM').onclick = () => { view.m++; if (view.m > 11){ view.m = 0; view.y++; } renderCal(); };
+$('#todayBtn').onclick = () => { const d = new Date(); view = { y: d.getFullYear(), m: d.getMonth() }; renderCal(); openDay(toStr(todayNum())); };
+let tx = null;
+$('#grid').addEventListener('touchstart', e => { tx = e.touches[0].clientX; }, { passive:true });
+$('#grid').addEventListener('touchend', e => { if (tx === null) return; const dx = e.changedTouches[0].clientX - tx; tx = null; if (Math.abs(dx) > 60) (dx < 0 ? $('#nextM') : $('#prevM')).click(); });
+
+/* ---------- Démarrage ---------- */
+if (prefs.lockOn && prefs.credId){ lockNow(); tryBio(true); } else unlockUI();
+renderCloud();
+if (prefs.clientId) initDrive();
+if ('serviceWorker' in navigator && window.isSecureContext) navigator.serviceWorker.register('sw.js').catch(() => {});
+</script>
+</body>
+</html>
