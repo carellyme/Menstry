@@ -75,7 +75,7 @@ Chaque saisie est enregistrée immédiatement. Aucun mot de passe n'est demandé
 | <img src="docs/legende-rapport-protege.png" width="44"> | **Rapport protégé** noté ce jour-là : cœur vide (contour) suivi d'un petit « p », sous la date. |
 | <img src="docs/legende-glaire.png" width="44"> | **Glaire cervicale** notée ce jour-là : goutte sous la date. |
 
-Le jour actuel est entouré d'un cercle. En résumé : **hachuré ou en pointillé = prévision**, **couleur pleine = cycle terminé ou saisie**.
+Le jour actuel est entouré d'un cercle. En résumé : ce qui est **hachuré ou en pointillé** est une **prévision** ; une **couleur pleine** indique un cycle terminé ou une saisie.
 
 Glisser le calendrier vers la gauche ou la droite change de mois.
 
@@ -85,7 +85,7 @@ Glisser le calendrier vers la gauche ou la droite change de mois.
 
 - **Durée du cycle** : moyenne des 6 derniers cycles (28 jours par défaut tant qu'aucun cycle complet n'a été noté, c'est-à-dire avant le deuxième « Début de cycle »).
 - **Prochaines règles** : dernier début de cycle + durée moyenne.
-- **Ovulation** : début du cycle suivant **− 14 jours**.
+- **Ovulation** : **14 jours avant** le début du cycle suivant.
 - **Fenêtre fertile** : de **5 jours avant** l'ovulation à **2 jours après**.
 
 Les prévisions s'affinent à mesure que des cycles sont notés. Les valeurs par défaut sont modifiables dans les réglages.

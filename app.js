@@ -16,7 +16,7 @@ const MUCUS_HI = new Set(['fluide']);
    Les deux sont enregistrées dans les données du téléphone et dans chaque sauvegarde (en-tête du fichier).
    Aucun code de compatibilité pour l'instant : il sera ajouté ici le jour où le format changera,
    en comparant la version enregistrée dans les données/sauvegardes avec DATA_VERSION. */
-const APP_VERSION = '1.1.2';
+const APP_VERSION = '1.1.3';
 const DATA_VERSION = 1;
 const DEFAULT_DATA = { v:1, dataVersion:DATA_VERSION, appVersion:APP_VERSION, days:{}, settings:{ cycleLen:28, periodLen:5, luteal:14, tolerance:4 }, updated:0 };
 const OVUM = '<svg class="ovum" viewBox="0 0 24 24" aria-hidden="true"><use href="#ovum"/></svg>';
@@ -696,9 +696,9 @@ function renderStats(){
       <div class="tile"><div class="s">Ovulation moy.</div><div class="v">J${Math.round(mean(cyc.map(c => c.ovuDay)))}</div></div>
       <div class="tile"><div class="s">Cycles</div><div class="v">${cyc.length}</div></div>
     </div>
-    <section class="card"><p class="ch-title">Durée des cycles</p><p class="ch-sub">En jours · pointillé = moyenne (${n1(avg)} j) · toucher un point pour le détail</p>
+    <section class="card"><p class="ch-title">Durée des cycles</p><p class="ch-sub">En jours · la ligne en pointillé indique la moyenne (${n1(avg)} j) · toucher un point pour le détail</p>
       ${chart(cyc.map(c => ({ x: dm(c.start), y: c.len, tip: `Cycle du ${fmt(c.start)} : <b>${c.len} j</b>` })), { color: '#b8405e', avg })}</section>
-    <section class="card"><p class="ch-title">Jour d'ovulation estimé</p><p class="ch-sub">Jour du cycle (fin de cycle − ${+data.settings.luteal || 14})</p>
+    <section class="card"><p class="ch-title">Jour d'ovulation estimé</p><p class="ch-sub">Jour du cycle, estimé ${+data.settings.luteal || 14} jours avant la fin du cycle</p>
       ${chart(cyc.map(c => ({ x: dm(c.start), y: c.ovuDay, tip: `Cycle du ${fmt(c.start)} : ovulation <b>J${c.ovuDay}</b> (${fmt(c.end - (+data.settings.luteal||14))})` })), { color: '#2e9e66' })}</section>
     ${ps.length ? `<section class="card"><p class="ch-title">Durée des règles</p><p class="ch-sub">En jours</p>
       ${chart(cyc.map(c => ({ x: dm(c.start), y: c.p, tip: `Cycle du ${fmt(c.start)} : <b>${c.p} j</b> de règles` })), { type: 'bar', color: '#d94862', zero: true })}</section>` : ''}
