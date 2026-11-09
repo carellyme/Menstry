@@ -275,6 +275,7 @@ details.tbl th{font-size:11px;color:var(--muted);font-weight:600}
         <button class="btn" id="driveNow" hidden>Sauvegarder maintenant</button>
         <button class="btn" id="driveRestore" hidden>Restaurer</button>
         <button class="btn danger" id="driveOff" hidden>Désactiver</button>
+        <button class="btn danger" id="driveDelete" hidden>Supprimer la sauvegarde Drive</button>
       </div>
       <p class="note" id="driveInfo"></p>
     </div>
@@ -282,6 +283,7 @@ details.tbl th{font-size:11px;color:var(--muted);font-weight:600}
     <h4>Données</h4>
     <div class="btnrow"><button class="btn danger" id="wipeBtn">Effacer toutes les données</button></div>
     <p class="note">Toutes les données restent dans ce téléphone. Les sauvegardes (fichier et Drive) sont chiffrées en AES-256 avant de quitter l'appareil.</p>
+    <p class="note" id="verInfo" style="text-align:center;margin-top:18px"></p>
   </div>
 </dialog>
 
@@ -336,26 +338,23 @@ const mean = a => a.reduce((x,y)=>x+y,0)/a.length;
 
 const MUCUS = [['visible','Visible'],['collante','Collante'],['fluide','Fluide']];
 const MUCUS_HI = new Set(['fluide']);
-// Conversion des anciens types de glaire vers les choix actuels ('' = sèche : aucune glaire notée)
-const MUCUS_OLD = { seche:'', cremeuse:'collante', aqueuse:'fluide', blanc:'fluide', glissante:'fluide', liquide:'fluide' };
-function migrate(d){
-  for (const [k, r] of Object.entries(d.days || {})){
-    if (!r || !(r.mucus in MUCUS_OLD)) continue;
-    if (MUCUS_OLD[r.mucus]) r.mucus = MUCUS_OLD[r.mucus]; else delete r.mucus;
-    if (!Object.keys(r).length) delete d.days[k];
-  }
-  return d;
-}
-const DEFAULT_DATA = { v:1, days:{}, settings:{ cycleLen:28, periodLen:5, luteal:14, tolerance:4 }, updated:0 };
+/* ---------- Versions ----------
+   APP_VERSION  : version du logiciel, affichée dans les réglages.
+   DATA_VERSION : version du format des données, à augmenter quand la structure des données change.
+   Les deux sont enregistrées dans les données du téléphone et dans chaque sauvegarde (en-tête du fichier).
+   Aucun code de compatibilité pour l'instant : il sera ajouté ici le jour où le format changera,
+   en comparant la version enregistrée dans les données/sauvegardes avec DATA_VERSION. */
+const APP_VERSION = '1.0.0';
+const DATA_VERSION = 1;
+const DEFAULT_DATA = { v:1, dataVersion:DATA_VERSION, appVersion:APP_VERSION, days:{}, settings:{ cycleLen:28, periodLen:5, luteal:14, tolerance:4 }, updated:0 };
 const OVUM = '<svg class="ovum" viewBox="0 0 24 24" aria-hidden="true"><use href="#ovum"/></svg>';
 
 /* ---------- Stockage ---------- */
 function loadJSON(k, def){ try { const v = JSON.parse(localStorage.getItem(k)); return v ? {...structuredClone(def), ...v} : structuredClone(def); } catch { return structuredClone(def); } }
 let data = loadJSON('mc.data', DEFAULT_DATA);
 data.settings = {...DEFAULT_DATA.settings, ...data.settings};
-if (Object.values(data.days).some(r => r && r.mucus in MUCUS_OLD)){ migrate(data); localStorage.setItem('mc.data', JSON.stringify(data)); }
 let prefs = loadJSON('mc.prefs', {});
-function saveData(){ data.updated = Date.now(); localStorage.setItem('mc.data', JSON.stringify(data)); }
+function saveData(){ data.updated = Date.now(); data.dataVersion = DATA_VERSION; data.appVersion = APP_VERSION; localStorage.setItem('mc.data', JSON.stringify(data)); }
 function savePrefs(){ localStorage.setItem('mc.prefs', JSON.stringify(prefs)); }
 if (navigator.storage?.persist) navigator.storage.persist().catch(()=>{});
 
@@ -581,7 +580,7 @@ async function deriveKey(pass, salt){
 async function encryptWith(key, salt, obj){
   const iv = rand(12);
   const ct = await crypto.subtle.encrypt({ name:'AES-GCM', iv }, key, enc.encode(JSON.stringify(obj)));
-  return { app:'menstry', v:1, kdf:`PBKDF2-SHA256-${ITER}`, cipher:'AES-256-GCM', salt:b64(salt), iv:b64(iv), ct:b64(ct) };
+  return { app:'menstry', v:1, appVersion:APP_VERSION, dataVersion:DATA_VERSION, kdf:`PBKDF2-SHA256-${ITER}`, cipher:'AES-256-GCM', salt:b64(salt), iv:b64(iv), ct:b64(ct) };
 }
 async function decryptWith(key, p){
   const pt = await crypto.subtle.decrypt({ name:'AES-GCM', iv:unb64(p.iv) }, key, unb64(p.ct));
@@ -628,7 +627,7 @@ async function applyImported(res){
   const o = res.obj;
   if (!o || typeof o.days !== 'object') throw new Error('Contenu invalide');
   if (Object.keys(data.days).length && !confirm('Remplacer les données actuelles de ce téléphone par la sauvegarde ?')) return false;
-  data = { ...structuredClone(DEFAULT_DATA), ...o, settings: { ...DEFAULT_DATA.settings, ...o.settings } }; migrate(data);
+  data = { ...structuredClone(DEFAULT_DATA), ...o, settings: { ...DEFAULT_DATA.settings, ...o.settings } };
   saveData();
   if (res.key && !prefs.hasKey) await storeKey(res.key, res.salt);
   renderAll(); renderSettings();
@@ -694,6 +693,11 @@ async function gfetch(url, opts = {}){
   if (r.status === 401){ accessToken = null; throw new Error('Session Google expirée'); }
   if (!r.ok && r.status !== 404) throw new Error('Drive : erreur ' + r.status);
   return r;
+}
+async function driveListAll(){
+  const q = encodeURIComponent(`name='${DRIVE_FILE}'`);
+  const r = await gfetch(`https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&q=${q}&fields=files(id)`);
+  return (await r.json()).files || [];
 }
 async function driveFind(){
   const q = encodeURIComponent(`name='${DRIVE_FILE}'`);
@@ -794,9 +798,10 @@ function renderSettings(){
   $('#keyInfo').textContent = prefs.hasKey ? 'Configuré · clé gardée dans ce téléphone' : 'Nécessaire pour les sauvegardes';
   $('#keyBtn').textContent = prefs.hasKey ? 'Changer' : 'Configurer';
   $('#bioSw').checked = !!prefs.lockOn;
+  $('#verInfo').textContent = `Menstry version ${APP_VERSION} · format des données ${DATA_VERSION}`;
   $('#clientId').value = prefs.clientId || '';
   const on = !!prefs.driveOn;
-  $('#driveConnect').hidden = on; $('#driveNow').hidden = !on; $('#driveRestore').hidden = !on; $('#driveOff').hidden = !on;
+  $('#driveConnect').hidden = on; $('#driveNow').hidden = !on; $('#driveRestore').hidden = !on; $('#driveOff').hidden = !on; $('#driveDelete').hidden = !on;
   $('#driveConnect').disabled = !prefs.clientId;
   $('#driveInfo').textContent = !prefs.hasKey ? 'Configurer d’abord le mot de passe de sauvegarde.'
     : on ? (prefs.lastSync ? `Dernière sauvegarde : ${new Date(prefs.lastSync).toLocaleString('fr-FR')}` : 'Connecté') + (prefs.syncErr && prefs.dirty ? ` · Erreur : ${prefs.syncErr}` : '')
@@ -864,6 +869,18 @@ $('#driveOff').onclick = () => {
   prefs.driveOn = false; prefs.dirty = false; savePrefs();
   if (accessToken && window.google?.accounts) google.accounts.oauth2.revoke(accessToken, () => {});
   accessToken = null; renderSettings(); renderCloud();
+};
+$('#driveDelete').onclick = () => {
+  requestToken(false).then(async () => {
+    if (!confirm('Supprimer la sauvegarde de Google Drive ?\n\nLa sauvegarde automatique sera aussi désactivée. Les données de ce téléphone ne sont pas touchées.')) return;
+    clearTimeout(syncTimer);
+    const files = await driveListAll();
+    for (const f of files) await gfetch(`https://www.googleapis.com/drive/v3/files/${f.id}`, { method:'DELETE' });
+    prefs.driveOn = false; prefs.dirty = false; prefs.driveFileId = null; prefs.lastSync = null; prefs.syncErr = ''; savePrefs();
+    if (accessToken && window.google?.accounts) google.accounts.oauth2.revoke(accessToken, () => {});
+    accessToken = null; renderSettings(); renderCloud();
+    toast(files.length ? 'Sauvegarde Drive supprimée ✓' : 'Aucune sauvegarde sur Drive. Synchronisation désactivée.');
+  }).catch(e => toast('Suppression impossible : ' + e.message));
 };
 $('#wipeBtn').onclick = async () => {
   if (!confirm('Effacer TOUTES les données de ce téléphone ?')) return;

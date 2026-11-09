@@ -163,6 +163,25 @@ Une fois configurée, la sauvegarde se fait **automatiquement** sur Google Drive
 
 La configuration prend environ 10 minutes et ne se fait qu'une fois. Voir [Configuration de Google Drive](#configuration-de-google-drive) en bas de page.
 
+### Supprimer la sauvegarde Google Drive
+
+La suppression efface uniquement la sauvegarde sur Drive : **les données du téléphone ne sont pas touchées**. Deux méthodes :
+
+**Depuis l'application** (le plus simple)
+1. Réglages ⚙️ → section **Google Drive**.
+2. Toucher **Supprimer la sauvegarde Drive**.
+3. Si une fenêtre Google s'ouvre, l'accepter, puis confirmer la suppression.
+
+La sauvegarde automatique est désactivée en même temps (sinon elle recréerait aussitôt le fichier). Pour la réactiver plus tard : **Connecter Drive**.
+
+**Depuis Google Drive** (par exemple si le téléphone n'est plus disponible)
+1. Ouvrir **drive.google.com**. Sur téléphone, dans Chrome : **⋮ → « Version pour ordinateur »**.
+2. Toucher **⚙️** (en haut à droite) → **Paramètres**.
+3. Menu de gauche → **Gérer les applications**.
+4. Sur la ligne **Menstry**, qui indique « Données d'application cachées », toucher **Options** → **Supprimer les données d'application cachées** → confirmer.
+
+Dans ce cas, si l'application est toujours connectée sur un téléphone, elle recréera une sauvegarde à la prochaine modification. Pour l'éviter, désactiver aussi la sauvegarde dans l'application (Réglages ⚙️ → **Désactiver**).
+
 ---
 
 ## 🔐 Le chiffrement, simplement
@@ -200,6 +219,12 @@ Cocher « Début de cycle » le jour réel : les prévisions se recalculent auto
 
 **L'application affiche « Règles en retard ».**
 Elle se base sur la durée moyenne des cycles. Cocher « Début de cycle » dès l'arrivée des règles.
+
+**Quelle version de l'application est installée ?**
+Elle est indiquée en bas des Réglages ⚙️. L'application se met à jour automatiquement à l'ouverture, avec une connexion internet. Chaque sauvegarde (fichier ou Drive) enregistre aussi la version de l'application qui l'a créée.
+
+**Comment supprimer la sauvegarde Google Drive ?**
+Voir [Supprimer la sauvegarde Google Drive](#supprimer-la-sauvegarde-google-drive).
 
 **Comment tout effacer ?**
 Réglages ⚙️ → **Effacer toutes les données**. Les sauvegardes, fichier ou Drive, ne sont pas supprimées.
@@ -246,5 +271,5 @@ Le message « Drive connecté ✓ » s'affiche et l'icône ☁️ affiche **✓*
 
 **À savoir**
 - En mode « Test », Google demande de **renouveler l'autorisation environ tous les 7 jours**. L'icône ☁️ passe alors à **↑** ou **!** : la toucher et accepter l'écran Google suffit.
-- **Où sont les données ?** Sur le **Google Drive du compte Google choisi à l'étape de connexion**, dans un dossier caché propre à Menstry, sous la forme d'un seul fichier chiffré, `menstry-backup.json`. Il n'apparaît ni dans l'application Drive ni dans la recherche. Pour vérifier qu'il existe : sur drive.google.com (version ordinateur) → ⚙️ → **Paramètres** → **Gérer les applications** → **Menstry** (« Données d'application cachées »). Le menu **Options** de cette ligne permet aussi de supprimer ces données.
+- **Où sont les données ?** Sur le **Google Drive du compte Google choisi à l'étape de connexion**, dans un dossier caché propre à Menstry, sous la forme d'un seul fichier chiffré, `menstry-backup.json`. Il n'apparaît ni dans l'application Drive ni dans la recherche. Pour vérifier qu'il existe : sur drive.google.com (version ordinateur) → ⚙️ → **Paramètres** → **Gérer les applications** → **Menstry** (« Données d'application cachées »). Pour supprimer ces données, voir [Supprimer la sauvegarde Google Drive](#supprimer-la-sauvegarde-google-drive).
 - La date de la dernière sauvegarde est indiquée dans Réglages ⚙️ → Google Drive.
