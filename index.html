@@ -334,10 +334,10 @@ const todayNum = () => { const d = new Date(); return Math.round(Date.UTC(d.getF
 const fmt = (n, o={day:'numeric', month:'short'}) => new Date(n*DAY).toLocaleDateString('fr-FR', {...o, timeZone:'UTC'});
 const mean = a => a.reduce((x,y)=>x+y,0)/a.length;
 
-const MUCUS = [['collante','Collante'],['liquide','Liquide']];
-const MUCUS_HI = new Set(['liquide']);
-// Conversion des anciens types de glaire vers les 2 choix actuels ('' = sèche : aucune glaire notée)
-const MUCUS_OLD = { seche:'', cremeuse:'collante', aqueuse:'liquide', blanc:'liquide', glissante:'liquide' };
+const MUCUS = [['visible','Visible'],['collante','Collante'],['fluide','Fluide']];
+const MUCUS_HI = new Set(['fluide']);
+// Conversion des anciens types de glaire vers les choix actuels ('' = sèche : aucune glaire notée)
+const MUCUS_OLD = { seche:'', cremeuse:'collante', aqueuse:'fluide', blanc:'fluide', glissante:'fluide', liquide:'fluide' };
 function migrate(d){
   for (const [k, r] of Object.entries(d.days || {})){
     if (!r || !(r.mucus in MUCUS_OLD)) continue;
