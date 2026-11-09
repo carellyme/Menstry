@@ -98,7 +98,9 @@ dialog.center{margin:auto;border-radius:20px;width:calc(100% - 32px);max-width:4
 .chips{display:flex;flex-wrap:wrap;gap:6px}
 .chip{border:1.5px solid var(--line);background:#fff;border-radius:999px;padding:8px 12px;font-size:14px}
 .chip.on{background:#e6f1fb;border-color:var(--mucus);color:#1d5a8f;font-weight:600}
-.lbl .lblday{display:block;font-weight:400;font-size:12px;color:var(--muted);margin:2px 0 0 19px}
+.toggle .t small.cday{display:inline;margin-left:6px}
+.lbl .lblday{font-weight:400;font-size:12px;color:var(--muted);margin-left:6px}
+.cday::before{content:"·";margin-right:6px}
 .cday:empty{display:none}
 .chips.prot{margin:-2px 0 10px 40px}
 .chips.prot[hidden]{display:none}
