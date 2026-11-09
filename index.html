@@ -259,7 +259,7 @@ details.tbl th{font-size:11px;color:var(--muted);font-weight:600}
     <div class="item"><div>Phase lutéale<small>Ovulation = fin de cycle − ce nombre</small></div><input type="number" id="sLuteal" min="8" max="18" inputmode="numeric"></div>
 
     <h4>Sécurité</h4>
-    <div class="item"><div>Mot de passe de sauvegarde<small id="keyInfo"></small></div><button class="btn" id="keyBtn"></button></div>
+    <div class="item"><div>Mot de passe de chiffrement<small id="keyInfo"></small></div><button class="btn" id="keyBtn"></button></div>
     <div class="item"><div>Verrouillage par empreinte / Face ID<small id="bioInfo">Demandé à l'ouverture et après 1 min en arrière-plan</small></div><label class="switch"><input type="checkbox" id="bioSw"><span></span></label></div>
 
     <h4>Sauvegarde fichier (chiffrée)</h4>
@@ -344,7 +344,7 @@ const MUCUS_HI = new Set(['fluide']);
    Les deux sont enregistrées dans les données du téléphone et dans chaque sauvegarde (en-tête du fichier).
    Aucun code de compatibilité pour l'instant : il sera ajouté ici le jour où le format changera,
    en comparant la version enregistrée dans les données/sauvegardes avec DATA_VERSION. */
-const APP_VERSION = '1.0.0';
+const APP_VERSION = '1.0.1';
 const DATA_VERSION = 1;
 const DEFAULT_DATA = { v:1, dataVersion:DATA_VERSION, appVersion:APP_VERSION, days:{}, settings:{ cycleLen:28, periodLen:5, luteal:14, tolerance:4 }, updated:0 };
 const OVUM = '<svg class="ovum" viewBox="0 0 24 24" aria-hidden="true"><use href="#ovum"/></svg>';
@@ -596,7 +596,7 @@ async function verifyPass(pass){
   try { const k = await deriveKey(pass, unb64(check.salt)); return (await decryptWith(k, check)) === 'menstry-ok'; } catch { return false; }
 }
 async function setupPassword(){
-  const p = await askPass({ title: prefs.hasKey ? 'Nouveau mot de passe' : 'Mot de passe de sauvegarde', hint: "Il chiffre les sauvegardes et n'est jamais enregistré. Il ne sera redemandé que pour une restauration sur un nouveau téléphone. En cas d'oubli, les sauvegardes sont perdues.", confirm: true });
+  const p = await askPass({ title: prefs.hasKey ? 'Nouveau mot de passe' : 'Mot de passe de chiffrement', hint: "Il chiffre les sauvegardes et n'est jamais enregistré. Il ne sera redemandé que pour une restauration sur un nouveau téléphone. En cas d'oubli, les sauvegardes sont perdues.", confirm: true });
   if (!p) return false;
   toast('Création de la clé…');
   const salt = rand(16);
@@ -606,7 +606,7 @@ async function setupPassword(){
 }
 async function encryptCurrent(){
   const key = await kvGet('key'), salt = await kvGet('salt');
-  if (!key) throw new Error('Aucun mot de passe de sauvegarde');
+  if (!key) throw new Error('Aucun mot de passe de chiffrement');
   return encryptWith(key, salt, data);
 }
 async function decryptPayload(p){
@@ -778,7 +778,7 @@ async function tryBio(silent){
 }
 $('#unlockBtn').onclick = () => tryBio(false);
 $('#unlockPass').onclick = async () => {
-  const p = await askPass({ title:'Mot de passe', hint:'Mot de passe de sauvegarde.' });
+  const p = await askPass({ title:'Mot de passe', hint:'Mot de passe de chiffrement.' });
   if (!p) return;
   $('#lockErr').textContent = 'Vérification…';
   if (await verifyPass(p)) unlockUI(); else $('#lockErr').textContent = 'Mot de passe incorrect.';
@@ -803,7 +803,7 @@ function renderSettings(){
   const on = !!prefs.driveOn;
   $('#driveConnect').hidden = on; $('#driveNow').hidden = !on; $('#driveRestore').hidden = !on; $('#driveOff').hidden = !on; $('#driveDelete').hidden = !on;
   $('#driveConnect').disabled = !prefs.clientId;
-  $('#driveInfo').textContent = !prefs.hasKey ? 'Configurer d’abord le mot de passe de sauvegarde.'
+  $('#driveInfo').textContent = !prefs.hasKey ? 'Configurer d’abord le mot de passe de chiffrement.'
     : on ? (prefs.lastSync ? `Dernière sauvegarde : ${new Date(prefs.lastSync).toLocaleString('fr-FR')}` : 'Connecté') + (prefs.syncErr && prefs.dirty ? ` · Erreur : ${prefs.syncErr}` : '')
     : 'Sauvegarde automatique, chiffrée, dans un dossier caché du Drive.';
 }
@@ -840,7 +840,7 @@ $('#clientId').onchange = e => {
   renderSettings(); if (prefs.clientId) initDrive();
 };
 $('#driveConnect').onclick = () => {
-  if (!prefs.hasKey) return toast('Configurer d’abord le mot de passe de sauvegarde');
+  if (!prefs.hasKey) return toast('Configurer d’abord le mot de passe de chiffrement');
   requestToken(true).then(async () => {
     prefs.driveOn = true; savePrefs();
     const ex = await driveFind();

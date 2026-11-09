@@ -39,7 +39,7 @@ L'application fonctionne aussi **sans connexion internet**.
 
 ## 🚀 Premiers pas
 
-1. Ouvrir les **réglages ⚙️** → **Mot de passe de sauvegarde** et choisir une phrase de 4 ou 5 mots, par exemple `lune pivoine tram cerise`. **La noter en lieu sûr.**
+1. Ouvrir les **réglages ⚙️** → **Mot de passe de chiffrement** et choisir une phrase de 4 ou 5 mots, par exemple `lune pivoine tram cerise`. **La noter en lieu sûr.**
 2. Dans les réglages, activer **Verrouillage par empreinte / Face ID**.
 3. Sur le calendrier, toucher le **premier jour des dernières règles** et cocher **« Début de cycle »**.
 
@@ -136,7 +136,7 @@ Les statistiques apparaissent dès que **deux débuts de cycle** ont été noté
 - Elles sont enregistrées **dans le téléphone**, dans le stockage de l'application installée.
 - Il n'y a **aucun serveur**, **aucun compte** à créer, **aucune publicité** et **aucun pistage**.
 - Le lien de l'application ne fournit que l'application elle-même, vide. Une autre personne qui l'ouvre ne voit **aucune donnée**.
-- Le **verrouillage par empreinte / Face ID** est demandé à l'ouverture, et au retour dans l'application après plus d'une minute. Le mot de passe de sauvegarde sert de solution de secours si l'empreinte ne fonctionne pas : c'est pourquoi il est demandé avant d'activer le verrouillage.
+- Le **verrouillage par empreinte / Face ID** est demandé à l'ouverture, et au retour dans l'application après plus d'une minute. Le mot de passe de chiffrement sert de solution de secours si l'empreinte ne fonctionne pas : c'est pourquoi il est demandé avant d'activer le verrouillage.
 
 ---
 
@@ -146,7 +146,7 @@ Les données étant stockées uniquement dans le téléphone, **elles sont perdu
 
 ### Option 1 : fichier de sauvegarde
 
-Réglages ⚙️ → **Exporter** produit un fichier chiffré (si aucun mot de passe de sauvegarde n'existe encore, il est demandé à ce moment-là). Il peut être rangé dans les fichiers du téléphone, envoyé par e-mail ou stocké ailleurs. Il est conseillé d'en refaire un régulièrement, par exemple une fois par mois.
+Réglages ⚙️ → **Exporter** produit un fichier chiffré (si aucun mot de passe de chiffrement n'existe encore, il est demandé à ce moment-là). Il peut être rangé dans les fichiers du téléphone, envoyé par e-mail ou stocké ailleurs. Il est conseillé d'en refaire un régulièrement, par exemple une fois par mois.
 
 Pour le récupérer : Réglages ⚙️ → **Importer**, puis choisir le fichier. Les données actuelles du téléphone sont alors remplacées par celles de la sauvegarde, après confirmation.
 
@@ -202,7 +202,7 @@ Avant de quitter le téléphone, chaque sauvegarde (fichier ou Drive) est **chif
 1. Installer l'application sur le nouveau téléphone (voir [Installation](#-installation)).
 2. **Avec Google Drive** : Réglages ⚙️ → coller l'identifiant Google → **Connecter Drive**. L'application propose alors de restaurer la sauvegarde.
    **Avec un fichier** : Réglages ⚙️ → **Importer**, puis choisir le fichier.
-3. Saisir le mot de passe de sauvegarde. C'est le seul moment où il est redemandé.
+3. Saisir le mot de passe de chiffrement. C'est le seul moment où il est redemandé.
 
 ---
 
@@ -262,7 +262,7 @@ L'application reste en mode « Test » : c'est suffisant pour un usage personnel
 **Partager l'application avec d'autres personnes** : ajouter leur adresse Gmail comme utilisateur test, puis leur transmettre l'ID client (il n'est pas secret). Chacune se connecte avec **son propre compte Google** et choisit **son propre mot de passe** : ses données sont enregistrées dans **son** Drive, chiffrées avec **son** mot de passe.
 
 **5. Connecter Menstry**
-1. Dans Menstry : Réglages ⚙️ → configurer le **mot de passe de sauvegarde** si ce n'est pas déjà fait.
+1. Dans Menstry : Réglages ⚙️ → configurer le **mot de passe de chiffrement** si ce n'est pas déjà fait.
 2. **Google Drive** → coller l'ID client → **Connecter Drive**.
 3. Choisir le compte Google **inscrit comme utilisateur test** : c'est sur le Drive de ce compte que seront enregistrées les sauvegardes. L'écran **« Google n'a pas validé cette application »** apparaît : c'est normal pour une application personnelle. Toucher **Continuer**.
 4. Accepter l'accès à Drive (cocher la case de permission si elle est proposée) → **Continuer**.
