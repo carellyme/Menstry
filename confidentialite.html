@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Menstry : règles de confidentialité</title>
+<link rel="icon" href="icon-192.png">
+<style>
+  body{margin:0;background:#faf6f3;color:#2b2326;font:16px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+  main{max-width:720px;margin:0 auto;padding:28px 18px 60px}
+  h1{font-size:26px;margin:0 0 4px}
+  h2{font-size:18px;margin:28px 0 6px}
+  .date{color:#8a7f83;font-size:14px;margin:0 0 20px}
+  a{color:#b8405e}
+  ul{padding-left:20px}
+  .card{background:#fff;border-radius:16px;padding:16px 18px;box-shadow:0 1px 3px rgba(60,30,40,.06)}
+</style>
+</head>
+<body>
+<main>
+  <h1>🌙 Menstry : règles de confidentialité</h1>
+  <p class="date">Dernière mise à jour : 9 novembre 2026</p>
+
+  <div class="card">
+    <p><strong>En résumé :</strong> Menstry ne collecte aucune donnée. Les informations saisies restent dans le téléphone de la personne qui utilise l'application. Les sauvegardes facultatives sont chiffrées sur le téléphone avant d'être envoyées, et ne sont lisibles qu'avec le mot de passe de chiffrement choisi par cette personne.</p>
+  </div>
+
+  <h2>1. Données saisies dans l'application</h2>
+  <p>Les informations notées dans Menstry (jours de règles, débuts de cycle, rapports, glaire cervicale, réglages) sont enregistrées <strong>uniquement dans le stockage local du téléphone</strong>, dans l'application installée.</p>
+  <ul>
+    <li>Aucun serveur ne reçoit ces données.</li>
+    <li>Aucun compte Menstry n'est nécessaire.</li>
+    <li>Aucune publicité, aucun outil de mesure d'audience, aucun pistage.</li>
+  </ul>
+
+  <h2>2. Sauvegarde par fichier</h2>
+  <p>La fonction « Exporter » produit un fichier de sauvegarde <strong>chiffré sur le téléphone</strong> (AES-256-GCM, clé dérivée du mot de passe de chiffrement par PBKDF2-SHA256). Ce fichier est remis à la personne, qui choisit où le conserver. Menstry n'y a pas accès.</p>
+
+  <h2>3. Sauvegarde sur Google Drive (facultative)</h2>
+  <p>Si la personne active la sauvegarde Google Drive, Menstry demande l'accès <strong>uniquement</strong> à son dossier de données d'application (autorisation Google <code>drive.appdata</code>) :</p>
+  <ul>
+    <li>Menstry crée et met à jour un seul fichier, <code>menstry-backup.json</code>, dans un dossier caché du <strong>Google Drive du compte connecté</strong>.</li>
+    <li>Ce fichier est <strong>chiffré sur le téléphone avant l'envoi</strong> : ni Google ni l'éditeur de Menstry ne peuvent en lire le contenu.</li>
+    <li>Menstry n'a accès à <strong>aucun autre fichier</strong> du Google Drive, ni à l'adresse e-mail, aux contacts ou à toute autre donnée du compte Google.</li>
+    <li>Les échanges ont lieu directement entre le téléphone et Google. Aucune donnée ne transite par un serveur de Menstry (il n'en existe pas).</li>
+  </ul>
+  <p>L'utilisation et le transfert des informations reçues des API Google respectent les <a href="https://developers.google.com/terms/api-services-user-data-policy">règles relatives aux données utilisateur des services d'API Google</a>, y compris les exigences d'utilisation limitée (« Limited Use »). Ces données servent exclusivement à enregistrer et restaurer la sauvegarde de la personne, et ne sont jamais partagées, vendues ni utilisées à d'autres fins.</p>
+
+  <h2>4. Verrouillage par empreinte / Face ID</h2>
+  <p>Le verrouillage utilise le capteur du téléphone. Les empreintes et les données du visage ne quittent jamais le téléphone et ne sont jamais accessibles à Menstry.</p>
+
+  <h2>5. Suppression des données</h2>
+  <ul>
+    <li><strong>Données du téléphone :</strong> Réglages → « Effacer toutes les données », ou suppression de l'application.</li>
+    <li><strong>Sauvegarde Google Drive :</strong> Réglages → « Supprimer la sauvegarde Drive », ou sur drive.google.com → Paramètres → Gérer les applications → Menstry → Options → Supprimer les données d'application cachées.</li>
+    <li><strong>Révoquer l'accès de Menstry au compte Google :</strong> <a href="https://myaccount.google.com/permissions">myaccount.google.com/permissions</a>.</li>
+  </ul>
+
+  <h2>6. Hébergement</h2>
+  <p>L'application est publiée sur GitHub Pages. Comme tout site web, l'hébergeur peut enregistrer des informations techniques de connexion (adresse IP, type de navigateur) lors du chargement de l'application. Ces informations ne contiennent aucune donnée saisie dans Menstry.</p>
+
+  <h2>7. Contact</h2>
+  <p>Pour toute question : <a href="https://github.com/carellyme/Menstry/issues">github.com/carellyme/Menstry/issues</a>.</p>
+
+  <p style="margin-top:32px"><a href="./">← Retour à l'application</a></p>
+</main>
+</body>
+</html>

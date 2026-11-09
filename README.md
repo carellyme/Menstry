@@ -135,6 +135,7 @@ Les statistiques apparaissent dès que **deux débuts de cycle** ont été noté
 
 - Elles sont enregistrées **dans le téléphone**, dans le stockage de l'application installée.
 - Il n'y a **aucun serveur**, **aucun compte** à créer, **aucune publicité** et **aucun pistage**.
+- Le détail figure dans les [règles de confidentialité](https://carellyme.github.io/Menstry/confidentialite.html), également accessibles en bas des Réglages ⚙️.
 - Le lien de l'application ne fournit que l'application elle-même, vide. Une autre personne qui l'ouvre ne voit **aucune donnée**.
 - Le **verrouillage par empreinte / Face ID** est demandé à l'ouverture, et au retour dans l'application après plus d'une minute. Le mot de passe de chiffrement sert de solution de secours si l'empreinte ne fonctionne pas : c'est pourquoi il est demandé avant d'activer le verrouillage.
 
@@ -152,16 +153,23 @@ Pour le récupérer : Réglages ⚙️ → **Importer**, puis choisir le fichier
 
 ### Option 2 : sauvegarde automatique sur Google Drive
 
-Une fois configurée, la sauvegarde se fait **automatiquement** sur Google Drive à chaque modification, sans aucune action.
+Une fois activée, la sauvegarde se fait **automatiquement** sur Google Drive à chaque modification, sans aucune action. Elle fonctionne avec **n'importe quel compte Google**.
 
-> 📁 **Où vont les données ?** Dans un **fichier chiffré** (`menstry-backup.json`) enregistré sur le **Google Drive du compte Google utilisé pour se connecter** dans Menstry. Chaque personne a donc son propre fichier, dans son propre Drive : deux personnes avec deux comptes Google ne partagent rien et ne peuvent pas écraser la sauvegarde de l'autre. Les données ne transitent par aucun autre compte ni serveur, pas même par celui du propriétaire du projet Google Cloud.
+**Activer la sauvegarde Google Drive**
+1. Réglages ⚙️ → configurer le **mot de passe de chiffrement**, si ce n'est pas déjà fait.
+2. Section **Google Drive** → **Connecter Drive**.
+3. Choisir le compte Google : c'est sur le Drive de ce compte que seront enregistrées les sauvegardes.
+4. Accepter l'accès demandé. Si l'écran « Google n'a pas validé cette application » apparaît, toucher **Continuer**.
+
+Le message « Drive connecté ✓ » s'affiche et l'icône ☁️ en haut de l'écran affiche **✓**. Une connexion internet est nécessaire.
+
+> 📁 **Où vont les données ?** Dans un **fichier chiffré** (`menstry-backup.json`) enregistré sur le **Google Drive du compte Google utilisé pour se connecter** dans Menstry. Chaque personne a donc son propre fichier, dans son propre Drive : deux personnes avec deux comptes Google ne partagent rien et ne peuvent pas écraser la sauvegarde de l'autre. Les données ne transitent par aucun autre compte ni serveur.
 
 - La sauvegarde est placée dans un **dossier caché réservé à l'application**. Elle n'apparaît pas dans Drive, et l'application n'a accès à **aucun autre fichier** du Drive.
 - L'icône ☁️ en haut de l'écran indique l'état : **✓** sauvegardé, **↑** en attente (la toucher lance la sauvegarde), **!** problème.
 - Une fenêtre Google peut parfois s'ouvrir et se refermer brièvement : c'est normal.
-- Environ une fois par semaine, Google demande de renouveler l'autorisation : toucher l'icône ☁️ et accepter.
-
-La configuration prend environ 10 minutes et ne se fait qu'une fois. Voir [Configuration de Google Drive](#configuration-de-google-drive) en bas de page.
+- Pour vérifier que la sauvegarde existe : sur drive.google.com (version ordinateur) → ⚙️ → **Paramètres** → **Gérer les applications** → **Menstry** (« Données d'application cachées »).
+- Pour retirer à tout moment l'accès de Menstry au compte Google : [myaccount.google.com/permissions](https://myaccount.google.com/permissions).
 
 ### Supprimer la sauvegarde Google Drive
 
@@ -200,7 +208,7 @@ Avant de quitter le téléphone, chaque sauvegarde (fichier ou Drive) est **chif
 ## 📱 Changement de téléphone
 
 1. Installer l'application sur le nouveau téléphone (voir [Installation](#-installation)).
-2. **Avec Google Drive** : Réglages ⚙️ → coller l'identifiant Google → **Connecter Drive**. L'application propose alors de restaurer la sauvegarde.
+2. **Avec Google Drive** : Réglages ⚙️ → **Connecter Drive** → choisir le même compte Google. L'application propose alors de restaurer la sauvegarde.
    **Avec un fichier** : Réglages ⚙️ → **Importer**, puis choisir le fichier.
 3. Saisir le mot de passe de chiffrement. C'est le seul moment où il est redemandé.
 
@@ -229,47 +237,3 @@ Voir [Supprimer la sauvegarde Google Drive](#supprimer-la-sauvegarde-google-driv
 **Comment tout effacer ?**
 Réglages ⚙️ → **Effacer toutes les données**. Les sauvegardes, fichier ou Drive, ne sont pas supprimées.
 
----
-
-## Configuration de Google Drive
-
-À faire une seule fois, depuis la [console Google Cloud](https://console.cloud.google.com). Sur téléphone, dans Chrome, activer d'abord **⋮ → « Version pour ordinateur »** : la console est plus facile à utiliser ainsi.
-
-**1. Créer le projet**
-1. Créer un **nouveau projet**, par exemple « Menstry », et le sélectionner en haut de la page.
-2. Menu ☰ → **API et services** → **Bibliothèque** → rechercher **Google Drive API** → **Activer**.
-
-**2. Configurer l'écran de consentement**
-1. Menu ☰ → **Google Auth Platform** (ou **API et services** → **Écran de consentement OAuth**) → **Commencer**.
-2. Indiquer un nom d'application (par exemple « Menstry ») et une adresse e-mail, choisir le type **Externe**, puis terminer.
-
-Le message « Vous n'avez pas encore configuré de client OAuth » s'affiche ensuite : c'est normal, c'est l'étape suivante.
-
-**3. Créer le client OAuth**
-1. Bouton **Créer un client OAuth** (ou menu de gauche **Clients** → **+ Créer un client**).
-2. Type d'application : **Application Web**, nom au choix.
-3. **Origines JavaScript autorisées** → **+ Ajouter un URI** → saisir exactement `https://carellyme.github.io` (sans `/Menstry` ni `/` final).
-4. Laisser « URI de redirection autorisés » vide → **Créer**.
-5. Copier l'**ID client**, qui se termine par `.apps.googleusercontent.com`. Il reste consultable dans le menu **Clients**.
-
-**4. Ajouter l'utilisateur test**
-1. Menu de gauche → **Audience**.
-2. Section **Utilisateurs test** → **+ Add users** (« Ajouter des utilisateurs »).
-3. Saisir l'adresse Gmail dont le Drive recevra les sauvegardes → **Enregistrer**.
-
-L'application reste en mode « Test » : c'est suffisant pour un usage personnel, jusqu'à 100 adresses.
-
-**Partager l'application avec d'autres personnes** : ajouter leur adresse Gmail comme utilisateur test, puis leur transmettre l'ID client (il n'est pas secret). Chacune se connecte avec **son propre compte Google** et choisit **son propre mot de passe** : ses données sont enregistrées dans **son** Drive, chiffrées avec **son** mot de passe.
-
-**5. Connecter Menstry**
-1. Dans Menstry : Réglages ⚙️ → configurer le **mot de passe de chiffrement** si ce n'est pas déjà fait.
-2. **Google Drive** → coller l'ID client → **Connecter Drive**.
-3. Choisir le compte Google **inscrit comme utilisateur test** : c'est sur le Drive de ce compte que seront enregistrées les sauvegardes. L'écran **« Google n'a pas validé cette application »** apparaît : c'est normal pour une application personnelle. Toucher **Continuer**.
-4. Accepter l'accès à Drive (cocher la case de permission si elle est proposée) → **Continuer**.
-
-Le message « Drive connecté ✓ » s'affiche et l'icône ☁️ affiche **✓**.
-
-**À savoir**
-- En mode « Test », Google demande de **renouveler l'autorisation environ tous les 7 jours**. L'icône ☁️ passe alors à **↑** ou **!** : la toucher et accepter l'écran Google suffit.
-- **Où sont les données ?** Sur le **Google Drive du compte Google choisi à l'étape de connexion**, dans un dossier caché propre à Menstry, sous la forme d'un seul fichier chiffré, `menstry-backup.json`. Il n'apparaît ni dans l'application Drive ni dans la recherche. Pour vérifier qu'il existe : sur drive.google.com (version ordinateur) → ⚙️ → **Paramètres** → **Gérer les applications** → **Menstry** (« Données d'application cachées »). Pour supprimer ces données, voir [Supprimer la sauvegarde Google Drive](#supprimer-la-sauvegarde-google-drive).
-- La date de la dernière sauvegarde est indiquée dans Réglages ⚙️ → Google Drive.

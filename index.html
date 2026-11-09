@@ -268,8 +268,7 @@ details.tbl th{font-size:11px;color:var(--muted);font-weight:600}
 
     <h4>Google Drive (chiffré)</h4>
     <div class="item" style="display:block">
-      <div>Client ID Google<small>Voir le guide d'installation</small></div>
-      <input type="text" id="clientId" placeholder="xxxx.apps.googleusercontent.com" autocomplete="off" spellcheck="false" style="margin-top:8px">
+      <div>Sauvegarde automatique<small>Avec n'importe quel compte Google</small></div>
       <div class="btnrow">
         <button class="btn primary" id="driveConnect">Connecter Drive</button>
         <button class="btn" id="driveNow" hidden>Sauvegarder maintenant</button>
@@ -284,6 +283,7 @@ details.tbl th{font-size:11px;color:var(--muted);font-weight:600}
     <div class="btnrow"><button class="btn danger" id="wipeBtn">Effacer toutes les données</button></div>
     <p class="note">Toutes les données restent dans ce téléphone. Les sauvegardes (fichier et Drive) sont chiffrées en AES-256 avant de quitter l'appareil.</p>
     <p class="note" id="verInfo" style="text-align:center;margin-top:18px"></p>
+    <p class="note" style="text-align:center"><a href="confidentialite.html" style="color:var(--accent)">Règles de confidentialité</a></p>
   </div>
 </dialog>
 
@@ -344,7 +344,7 @@ const MUCUS_HI = new Set(['fluide']);
    Les deux sont enregistrées dans les données du téléphone et dans chaque sauvegarde (en-tête du fichier).
    Aucun code de compatibilité pour l'instant : il sera ajouté ici le jour où le format changera,
    en comparant la version enregistrée dans les données/sauvegardes avec DATA_VERSION. */
-const APP_VERSION = '1.0.1';
+const APP_VERSION = '1.1.0';
 const DATA_VERSION = 1;
 const DEFAULT_DATA = { v:1, dataVersion:DATA_VERSION, appVersion:APP_VERSION, days:{}, settings:{ cycleLen:28, periodLen:5, luteal:14, tolerance:4 }, updated:0 };
 const OVUM = '<svg class="ovum" viewBox="0 0 24 24" aria-hidden="true"><use href="#ovum"/></svg>';
@@ -662,21 +662,24 @@ $('#impFile').onchange = async e => {
 
 /* ---------- Google Drive (appDataFolder) ---------- */
 const SCOPE = 'https://www.googleapis.com/auth/drive.appdata';
+// Identifiant OAuth public de Menstry (non secret) : permet à tout compte Google de connecter sa sauvegarde
+const GOOGLE_CLIENT_ID = '917226634270-s4gdfoc9flih0d85mequ5212f9qjsue4.apps.googleusercontent.com';
 const DRIVE_FILE = 'menstry-backup.json';
 let tokenClient = null, accessToken = null, tokenExp = 0, tokenWaiters = [], syncTimer = null, syncing = false;
 const tokenValid = () => accessToken && Date.now() < tokenExp;
 
 function loadScript(src){ return new Promise((res, rej) => { if (document.querySelector(`script[src="${src}"]`) && window.google?.accounts) return res(); const s = document.createElement('script'); s.src = src; s.async = true; s.onload = res; s.onerror = () => rej(new Error('Chargement Google impossible (hors ligne ?)')); document.head.appendChild(s); }); }
-async function initDrive(){
-  if (!prefs.clientId) return;
+let driveLoading = null;
+function initDrive(){ return driveLoading ||= initDriveNow(); }
+async function initDriveNow(){
   try {
     await loadScript('https://accounts.google.com/gsi/client');
     tokenClient = google.accounts.oauth2.initTokenClient({
-      client_id: prefs.clientId, scope: SCOPE,
+      client_id: GOOGLE_CLIENT_ID, scope: SCOPE,
       callback: r => { const w = tokenWaiters; tokenWaiters = []; if (r.error){ w.forEach(x => x.rej(new Error(r.error))); return; } accessToken = r.access_token; tokenExp = Date.now() + (r.expires_in - 60)*1000; w.forEach(x => x.res(accessToken)); },
       error_callback: e => { const w = tokenWaiters; tokenWaiters = []; w.forEach(x => x.rej(new Error(e?.type === 'popup_closed' ? 'Fenêtre Google fermée' : (e?.type || 'Autorisation refusée')))); }
     });
-  } catch (e){ console.warn(e); }
+  } catch (e){ console.warn(e); driveLoading = null; }  // nouvel essai à la prochaine ouverture des réglages
   renderCloud();
 }
 // Doit être appelé directement dans un geste utilisateur (clic) pour éviter le blocage du popup.
@@ -799,15 +802,15 @@ function renderSettings(){
   $('#keyBtn').textContent = prefs.hasKey ? 'Changer' : 'Configurer';
   $('#bioSw').checked = !!prefs.lockOn;
   $('#verInfo').textContent = `Menstry version ${APP_VERSION} · format des données ${DATA_VERSION}`;
-  $('#clientId').value = prefs.clientId || '';
   const on = !!prefs.driveOn;
   $('#driveConnect').hidden = on; $('#driveNow').hidden = !on; $('#driveRestore').hidden = !on; $('#driveOff').hidden = !on; $('#driveDelete').hidden = !on;
-  $('#driveConnect').disabled = !prefs.clientId;
+  $('#driveConnect').disabled = !tokenClient;
   $('#driveInfo').textContent = !prefs.hasKey ? 'Configurer d’abord le mot de passe de chiffrement.'
     : on ? (prefs.lastSync ? `Dernière sauvegarde : ${new Date(prefs.lastSync).toLocaleString('fr-FR')}` : 'Connecté') + (prefs.syncErr && prefs.dirty ? ` · Erreur : ${prefs.syncErr}` : '')
-    : 'Sauvegarde automatique, chiffrée, dans un dossier caché du Drive.';
+    : !tokenClient ? 'Connexion à Google… (connexion internet nécessaire)'
+    : 'Sauvegarde automatique et chiffrée dans un dossier caché du Google Drive du compte choisi.';
 }
-$('#setBtn').onclick = () => { renderSettings(); $('#setDlg').showModal(); };
+$('#setBtn').onclick = () => { renderSettings(); $('#setDlg').showModal(); initDrive().then(() => { if ($('#setDlg').open) renderSettings(); }); };
 for (const [id, k] of [['#sCycle','cycleLen'], ['#sPeriod','periodLen'], ['#sLuteal','luteal'], ['#sTol','tolerance']]){
   $(id).onchange = e => { const v = parseInt(e.target.value, 10); if (!v) return renderSettings(); data.settings[k] = v; saveData(); renderAll(); renderSettings(); syncSoon(false); };
 }
@@ -834,10 +837,6 @@ $('#bioSw').onchange = async e => {
     try { if (!(await verifyBio())) throw new Error(); prefs.lockOn = false; delete prefs.credId; savePrefs(); toast('Verrouillage désactivé'); }
     catch { e.target.checked = true; toast('Vérification requise pour désactiver'); }
   }
-};
-$('#clientId').onchange = e => {
-  prefs.clientId = e.target.value.trim(); tokenClient = null; accessToken = null; savePrefs();
-  renderSettings(); if (prefs.clientId) initDrive();
 };
 $('#driveConnect').onclick = () => {
   if (!prefs.hasKey) return toast('Configurer d’abord le mot de passe de chiffrement');
@@ -1032,7 +1031,7 @@ $('#grid').addEventListener('touchend', e => { if (tx === null) return; const dx
 /* ---------- Démarrage ---------- */
 if (prefs.lockOn && prefs.credId){ lockNow(); tryBio(true); } else unlockUI();
 renderCloud();
-if (prefs.clientId) initDrive();
+if (prefs.driveOn) initDrive();
 if ('serviceWorker' in navigator && window.isSecureContext) navigator.serviceWorker.register('sw.js').catch(() => {});
 </script>
 </body>
