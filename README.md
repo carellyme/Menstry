@@ -39,11 +39,12 @@ L'application fonctionne aussi **sans connexion internet**.
 
 ## 🚀 Premiers pas
 
-1. Ouvrir les **réglages ⚙️** → **Mot de passe de chiffrement** et choisir une phrase de 4 ou 5 mots, par exemple `lune pivoine tram cerise`. **La noter en lieu sûr.**
+1. Ouvrir les **réglages ⚙️** → **Mot de passe de chiffrement** et choisir un mot de passe de **8 caractères minimum**.
 2. Dans les réglages, activer **Verrouillage par empreinte / Face ID**.
-3. Sur le calendrier, toucher le **premier jour des dernières règles** et cocher **« Début de cycle »**.
+3. *Facultatif* : dans les réglages, section **Google Drive**, toucher **Connecter Drive** pour synchroniser automatiquement une sauvegarde chiffrée sur un compte Google Drive.
+4. Sur le calendrier, toucher le **premier jour des dernières règles** et cocher **« Début de cycle »**.
 
-Les prévisions apparaissent immédiatement.
+Les prévisions apparaissent immédiatement après l'étape 4.
 
 ---
 
