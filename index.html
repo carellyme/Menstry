@@ -98,6 +98,8 @@ dialog.center{margin:auto;border-radius:20px;width:calc(100% - 32px);max-width:4
 .chips{display:flex;flex-wrap:wrap;gap:6px}
 .chip{border:1.5px solid var(--line);background:#fff;border-radius:999px;padding:8px 12px;font-size:14px}
 .chip.on{background:#e6f1fb;border-color:var(--mucus);color:#1d5a8f;font-weight:600}
+.lbl .lblday{display:block;font-weight:400;font-size:12px;color:var(--muted);margin:2px 0 0 19px}
+.cday:empty{display:none}
 .chips.prot{margin:-2px 0 10px 40px}
 .chips.prot[hidden]{display:none}
 .pp{font-size:.62em;font-weight:700;margin-left:-.08em;vertical-align:-.05em;font-family:system-ui,-apple-system,sans-serif}
@@ -238,13 +240,13 @@ details.tbl th{font-size:11px;color:var(--muted);font-weight:600}
     <div class="sheet-head"><h3 id="sheetTitle"></h3><button class="close" data-close aria-label="Fermer">✕</button></div>
     <p class="muted" id="sheetInfo"></p>
     <button class="toggle" data-k="start" style="--c:var(--accent)"><span class="ic">🌸</span><span class="t">Début de cycle<small>1er jour des règles</small></span><span class="ck"></span></button>
-    <button class="toggle" data-k="period" style="--c:var(--period)"><span class="ic">🩸</span><span class="t">Règles</span><span class="ck"></span></button>
-    <button class="toggle" data-k="sex" style="--c:#c2185b"><span class="ic">♥</span><span class="t">Rapport</span><span class="ck"></span></button>
+    <button class="toggle" data-k="period" style="--c:var(--period)"><span class="ic">🩸</span><span class="t">Règles<small class="cday"></small></span><span class="ck"></span></button>
+    <button class="toggle" data-k="sex" style="--c:#c2185b"><span class="ic">♥</span><span class="t">Rapport<small class="cday"></small></span><span class="ck"></span></button>
     <div class="chips prot" id="protChips" hidden>
       <button class="chip pchip" data-p="0"><span class="ph">♥</span> Non protégé</button>
       <button class="chip pchip" data-p="1"><span class="ph">♡<small class="pp">p</small></span> Protégé</button>
     </div>
-    <div class="lbl">💧 Glaire cervicale</div>
+    <div class="lbl">💧 Glaire cervicale<small class="cday lblday"></small></div>
     <div class="chips" id="mucusChips"></div>
   </div>
 </dialog>

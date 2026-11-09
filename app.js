@@ -16,7 +16,7 @@ const MUCUS_HI = new Set(['fluide']);
    Les deux sont enregistrées dans les données du téléphone et dans chaque sauvegarde (en-tête du fichier).
    Aucun code de compatibilité pour l'instant : il sera ajouté ici le jour où le format changera,
    en comparant la version enregistrée dans les données/sauvegardes avec DATA_VERSION. */
-const APP_VERSION = '1.1.3';
+const APP_VERSION = '1.1.4';
 const DATA_VERSION = 1;
 const DEFAULT_DATA = { v:1, dataVersion:DATA_VERSION, appVersion:APP_VERSION, days:{}, settings:{ cycleLen:28, periodLen:5, luteal:14, tolerance:4 }, updated:0 };
 const OVUM = '<svg class="ovum" viewBox="0 0 24 24" aria-hidden="true"><use href="#ovum"/></svg>';
@@ -202,6 +202,10 @@ function openDay(s){ sheetDay = s; renderSheet(); $('#daySheet').showModal(); }
 function renderSheet(){
   const rec = data.days[sheetDay] || {}, n = toNum(sheetDay), f = INFO.fert.get(n);
   $('#sheetTitle').textContent = fmt(n, { weekday:'long', day:'numeric', month:'long' });
+  // Jour du cycle auquel appartient ce jour (dernier début de cycle à cette date ou avant)
+  const st = INFO.starts.filter(x => x <= n).at(-1);
+  const cd = st != null && n - st < 60 ? `Jour ${n - st + 1}` : '';
+  document.querySelectorAll('#daySheet .cday').forEach(e => { e.textContent = cd; });
   let info = '';
   if (f?.ovu) info = f.pred ? 'Ovulation estimée (prévision)' : 'Ovulation estimée (cycle terminé)';
   else if (f) info = f.pred ? 'Fenêtre fertile probable (prévision)' : 'Fenêtre fertile (cycle terminé)';
