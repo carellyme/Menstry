@@ -16,7 +16,7 @@ const MUCUS_HI = new Set(['fluide']);
    Les deux sont enregistrées dans les données du téléphone et dans chaque sauvegarde (en-tête du fichier).
    Aucun code de compatibilité pour l'instant : il sera ajouté ici le jour où le format changera,
    en comparant la version enregistrée dans les données/sauvegardes avec DATA_VERSION. */
-const APP_VERSION = '1.1.1';
+const APP_VERSION = '1.1.2';
 const DATA_VERSION = 1;
 const DEFAULT_DATA = { v:1, dataVersion:DATA_VERSION, appVersion:APP_VERSION, days:{}, settings:{ cycleLen:28, periodLen:5, luteal:14, tolerance:4 }, updated:0 };
 const OVUM = '<svg class="ovum" viewBox="0 0 24 24" aria-hidden="true"><use href="#ovum"/></svg>';
@@ -468,6 +468,8 @@ async function verifyBio(){
   return !!(flags & 0x04); // bit UV : l'utilisatrice a bien été vérifiée
 }
 let hiddenAt = 0;
+const LOCK_DELAYS = [1, 5, 15, 30];
+const lockDelayMin = () => LOCK_DELAYS.includes(+prefs.lockDelay) ? +prefs.lockDelay : 5;  // 5 min par défaut
 function lockNow(){
   document.querySelectorAll('dialog[open]').forEach(d => d.close());
   document.body.classList.add('locked'); $('#lock').hidden = false; $('#lockErr').textContent = '';
@@ -488,7 +490,7 @@ $('#unlockPass').onclick = async () => {
 document.addEventListener('visibilitychange', () => {
   if (document.hidden){ hiddenAt = Date.now(); return; }
   if (document.body.classList.contains('locked')) return;
-  if (prefs.lockOn && hiddenAt && Date.now() - hiddenAt > 60000){ lockNow(); tryBio(true); }
+  if (prefs.lockOn && hiddenAt && Date.now() - hiddenAt > lockDelayMin() * 60000){ lockNow(); tryBio(true); }
   else renderAll();
 });
 
@@ -500,6 +502,7 @@ function renderSettings(){
   $('#keyInfo').textContent = prefs.hasKey ? 'Configuré · clé gardée dans ce téléphone' : 'Nécessaire pour les sauvegardes';
   $('#keyBtn').textContent = prefs.hasKey ? 'Changer' : 'Configurer';
   $('#bioSw').checked = !!prefs.lockOn;
+  $('#lockDelay').value = String(lockDelayMin()); $('#lockDelayRow').hidden = !prefs.lockOn;
   $('#verInfo').textContent = `Menstry version ${APP_VERSION} · format des données ${DATA_VERSION}`;
   const on = !!prefs.driveOn;
   $('#driveConnect').hidden = on; $('#driveNow').hidden = !on; $('#driveRestore').hidden = !on; $('#driveOff').hidden = !on; $('#driveDelete').hidden = !on;
@@ -530,13 +533,14 @@ $('#bioSw').onchange = async e => {
       if (!(await setupPassword())) return;
       renderSettings(); toast('Mot de passe enregistré. Réactiver le verrouillage.', 3500); return;
     }
-    try { await registerBio(); prefs.lockOn = true; savePrefs(); toast('Verrouillage activé ✓'); }
+    try { await registerBio(); prefs.lockOn = true; savePrefs(); renderSettings(); toast('Verrouillage activé ✓'); }
     catch (err){ e.target.checked = false; toast(err.name === 'NotAllowedError' ? 'Annulé' : 'Empreinte indisponible : ' + err.message); }
   } else {
-    try { if (!(await verifyBio())) throw new Error(); prefs.lockOn = false; delete prefs.credId; savePrefs(); toast('Verrouillage désactivé'); }
+    try { if (!(await verifyBio())) throw new Error(); prefs.lockOn = false; delete prefs.credId; savePrefs(); renderSettings(); toast('Verrouillage désactivé'); }
     catch { e.target.checked = true; toast('Vérification requise pour désactiver'); }
   }
 };
+$('#lockDelay').onchange = e => { prefs.lockDelay = +e.target.value; savePrefs(); toast(`Verrouillage après ${prefs.lockDelay} min hors de l’application`); };
 $('#driveConnect').onclick = () => {
   if (!prefs.hasKey) return toast('Configurer d’abord le mot de passe de chiffrement');
   requestToken(true).then(async () => {

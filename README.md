@@ -50,7 +50,7 @@ Les prévisions apparaissent immédiatement après l'étape 4.
 
 ## ✍️ Utilisation au quotidien
 
-Toucher un jour du calendrier, ou le bouton **« + Noter aujourd'hui »**, puis cocher ce qui s'applique :
+Toucher un jour du calendrier, ou le bouton **« + Aujourd'hui »**, puis cocher ce qui s'applique :
 
 | | |
 |---|---|
@@ -138,7 +138,7 @@ Les statistiques apparaissent dès que **deux débuts de cycle** ont été noté
 - Il n'y a **aucun serveur**, **aucun compte** à créer, **aucune publicité** et **aucun pistage**.
 - Le détail figure dans les [règles de confidentialité](https://carellyme.github.io/Menstry/confidentialite.html), également accessibles en bas des Réglages ⚙️.
 - Le lien de l'application ne fournit que l'application elle-même, vide. Une autre personne qui l'ouvre ne voit **aucune donnée**.
-- Le **verrouillage par empreinte / Face ID** est demandé à l'ouverture, et au retour dans l'application après plus d'une minute. Le mot de passe de chiffrement sert de solution de secours si l'empreinte ne fonctionne pas : c'est pourquoi il est demandé avant d'activer le verrouillage.
+- Le **verrouillage par empreinte / Face ID** est demandé à l'ouverture, et au retour dans l'application après 5 minutes passées en dehors (délai réglable : 1, 5, 15 ou 30 minutes, dans Réglages ⚙️ → « Verrouiller après »). Le mot de passe de chiffrement sert de solution de secours si l'empreinte ne fonctionne pas : c'est pourquoi il est demandé avant d'activer le verrouillage.
 
 ---
 

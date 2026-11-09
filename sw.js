@@ -1,5 +1,5 @@
 // Cache hors ligne : réseau d'abord, cache en secours. Les requêtes Google ne sont jamais mises en cache.
-const CACHE = 'menstry-v8';
+const CACHE = 'menstry-v9';
 const ASSETS = ['./', './index.html', './app.js', './manifest.json', './icon-192.png', './icon-512.png'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS))); self.skipWaiting(); });
 self.addEventListener('activate', e => {
